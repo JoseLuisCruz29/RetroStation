@@ -42,6 +42,7 @@ if cmake -S "$root/native/third_party/ppsspp" -B "$ppsspp_build" -G Ninja \
      -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DLIBRETRO=ON -DUSE_DISCORD=OFF \
      -DUSE_SYSTEM_LIBPNG=OFF -DUNITTEST=OFF -DHEADLESS=OFF \
      -DMOBILE_DEVICE=ON -DUSING_GLES2=ON "-DOPENGL_LIBRARIES=-framework OpenGLES" \
+     -DCMAKE_SYSTEM_PROCESSOR=arm64 -DFORCED_CPU=arm64 \
      "-DCMAKE_C_FLAGS=-DGL_ETC1_RGB8_OES=0 -U__STRICT_ANSI__" \
      "-DCMAKE_CXX_FLAGS=-DGL_ETC1_RGB8_OES=0 -U__STRICT_ANSI__" \
    && cmake --build "$ppsspp_build" --parallel --target ppsspp_libretro; then
