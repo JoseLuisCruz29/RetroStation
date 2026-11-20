@@ -2,12 +2,14 @@ import AVFoundation
 import Accelerate
 import CoreVideo
 import Flutter
+import GameController
 import UIKit
 
 @main
 @objc class AppDelegate: FlutterAppDelegate, FlutterImplicitEngineDelegate {
   private var video: NativeVideo?
   private var sounds: UiSounds?
+  private var gamepads: GamepadBridge?
 
   override func application(
     _ application: UIApplication,
@@ -25,6 +27,7 @@ import UIKit
     if let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "RetroStationNative") {
       video = NativeVideo(registrar: registrar)
       sounds = UiSounds(messenger: registrar.messenger())
+      gamepads = GamepadBridge(messenger: registrar.messenger())
     }
   }
 }
@@ -178,5 +181,86 @@ final class UiSounds {
     player.volume = volume
     player.currentTime = 0
     player.play()
+  }
+}
+
+/// Mandos en iPhone (Pro Controller de Switch, Xbox, PlayStation, MFi...) con
+/// GameController. Envía el estado a Dart por "retrostation/gamepad" en el
+/// mismo formato que el PC (windows/runner/gamepad_input.cpp), con los botones
+/// por posición en el orden del Pro Controller: abajo, derecha, izquierda,
+/// arriba, L, R, ZL, ZR, −, +, L3, R3, Home. Así cualquier mando usa la misma
+/// distribución que en la consola (lib/controllers/gamepad.dart).
+final class GamepadBridge {
+  private let channel: FlutterMethodChannel
+  private var ids: [ObjectIdentifier: Int] = [:]
+  private var nextId = 0
+
+  init(messenger: FlutterBinaryMessenger) {
+    channel = FlutterMethodChannel(name: "retrostation/gamepad", binaryMessenger: messenger)
+    let center = NotificationCenter.default
+    center.addObserver(forName: .GCControllerDidConnect, object: nil, queue: .main) { [weak self] note in
+      if let pad = note.object as? GCController { self?.attach(pad) }
+    }
+    center.addObserver(forName: .GCControllerDidDisconnect, object: nil, queue: .main) { [weak self] note in
+      guard let self = self, let pad = note.object as? GCController,
+            let id = self.ids.removeValue(forKey: ObjectIdentifier(pad)) else { return }
+      self.channel.invokeMethod("state", arguments: ["id": id, "connected": false])
+    }
+    GCController.shouldMonitorBackgroundEvents = true
+    GCController.controllers().forEach(attach)
+  }
+
+  private func attach(_ pad: GCController) {
+    guard let gamepad = pad.extendedGamepad else { return }
+    let key = ObjectIdentifier(pad)
+    if ids[key] == nil {
+      ids[key] = nextId
+      nextId += 1
+    }
+    gamepad.valueChangedHandler = { [weak self, weak pad] _, _ in
+      guard let self = self, let pad = pad else { return }
+      self.send(pad)
+    }
+    send(pad)
+  }
+
+  private func send(_ pad: GCController) {
+    guard let g = pad.extendedGamepad, let id = ids[ObjectIdentifier(pad)] else { return }
+    let buttons: [GCControllerButtonInput?] = [
+      g.buttonA, g.buttonB, g.buttonX, g.buttonY,
+      g.leftShoulder, g.rightShoulder, g.leftTrigger, g.rightTrigger,
+      g.buttonOptions, g.buttonMenu, g.leftThumbstickButton, g.rightThumbstickButton, g.buttonHome,
+    ]
+    var mask = 0
+    for (i, button) in buttons.enumerated() where button?.isPressed == true {
+      mask |= 1 << i
+    }
+    let up = g.dpad.up.isPressed, down = g.dpad.down.isPressed
+    let left = g.dpad.left.isPressed, right = g.dpad.right.isPressed
+    var pov = -1
+    switch (up, down, left, right) {
+    case (true, _, _, true): pov = 4500
+    case (_, true, _, true): pov = 13500
+    case (_, true, true, _): pov = 22500
+    case (true, _, true, _): pov = 31500
+    case (true, _, _, _): pov = 0
+    case (_, _, _, true): pov = 9000
+    case (_, true, _, _): pov = 18000
+    case (_, _, true, _): pov = 27000
+    default: pov = -1
+    }
+    let stick = g.leftThumbstick
+    channel.invokeMethod("state", arguments: [
+      "id": id,
+      "connected": true,
+      "name": pad.vendorName ?? "Mando",
+      // Distribución por posición (la del Pro Controller): ver la cabecera.
+      "vid": 0x057e,
+      "pid": 0,
+      "buttons": mask,
+      "pov": pov,
+      // GameController: arriba es positivo; en libretro, abajo.
+      "axes": [Double(stick.xAxis.value), Double(-stick.yAxis.value), 0.0, 0.0, 0.0, 0.0],
+    ])
   }
 }

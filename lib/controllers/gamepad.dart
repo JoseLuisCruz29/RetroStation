@@ -82,7 +82,7 @@ class PadState {
 /// Mandos conectados al PC. En Android los mandos llegan como teclas.
 class Gamepads extends ChangeNotifier {
   Gamepads._() {
-    if (Platform.isWindows) _channel.setMethodCallHandler(_onCall);
+    if (Platform.isWindows || Platform.isIOS) _channel.setMethodCallHandler(_onCall);
   }
 
   static final instance = Gamepads._();

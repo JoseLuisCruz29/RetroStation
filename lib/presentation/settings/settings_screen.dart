@@ -76,19 +76,20 @@ class SettingsScreen extends ConsumerWidget {
             label: '${(settings.volume * 100).round()} %',
             onChanged: (v) => controller.update(settings.copyWith(volume: v)),
           ),
-          if (isWindowsDesktop()) ...[
-            const SectionHeader('Teclado y mando'),
-            ListTile(
-              leading: const Icon(Icons.keyboard_rounded),
-              title: const Text('Cambiar las teclas de juego'),
-              subtitle: Text(settings.keyboard.isEmpty ? 'Teclas de fábrica' : 'Personalizadas'),
-              trailing: const Icon(Icons.chevron_right_rounded),
-              onTap: () => context.push(Routes.keyboard),
-            ),
+          if (isWindowsDesktop() || isIOSDevice()) ...[
+            SectionHeader(isWindowsDesktop() ? 'Teclado y mando' : 'Mando'),
+            if (isWindowsDesktop())
+              ListTile(
+                leading: const Icon(Icons.keyboard_rounded),
+                title: const Text('Cambiar las teclas de juego'),
+                subtitle: Text(settings.keyboard.isEmpty ? 'Teclas de fábrica' : 'Personalizadas'),
+                trailing: const Icon(Icons.chevron_right_rounded),
+                onTap: () => context.push(Routes.keyboard),
+              ),
             ListTile(
               leading: const Icon(Icons.sports_esports_rounded),
               title: const Text('Mando'),
-              subtitle: const Text('Pro Controller de Switch, Xbox o cualquier mando USB/Bluetooth'),
+              subtitle: const Text('Pro Controller de Switch, Xbox, PlayStation o cualquier mando USB/Bluetooth'),
               trailing: const Icon(Icons.chevron_right_rounded),
               onTap: () => context.push(Routes.gamepad),
             ),
