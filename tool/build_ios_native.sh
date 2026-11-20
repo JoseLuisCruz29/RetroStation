@@ -21,6 +21,7 @@ cmake -S "$root/native" -B "$build" -G Ninja \
   -DCMAKE_OSX_DEPLOYMENT_TARGET=$min_ios \
   -DCMAKE_OSX_SYSROOT=iphoneos \
   -DCMAKE_TRY_COMPILE_TARGET_TYPE=STATIC_LIBRARY \
+  -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
   -DCMAKE_INSTALL_NAME_DIR=@rpath
 cmake --build "$build" --parallel
 
