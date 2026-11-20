@@ -19,11 +19,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Solo los emuladores de la versión de iPhone.
+      # Los emuladores de la versión de iPhone, completos; del resto solo hace
+      # falta su licencia (la app las muestra en Ajustes > Licencias), así que se
+      # descargan sin historial de archivos (más rápido).
       - name: Emuladores (submódulos)
         run: |
           git submodule update --init \
             native/third_party/mgba native/third_party/fceumm native/third_party/snes9x
+          git submodule update --init --filter=blob:none \
+            native/third_party/pcsx_rearmed native/third_party/melonds \
+            native/third_party/desmume2015 native/third_party/ppsspp native/third_party/gpsp
 
       - name: Herramientas
         run: |
