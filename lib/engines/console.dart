@@ -1,7 +1,9 @@
 import 'dart:ffi' show Abi;
-import 'dart:io' show Platform;
+import 'dart:io' show File, Platform;
 
 import 'package:material_ui/material_ui.dart';
+
+import '../emulation/native_bindings.dart';
 
 /// Estado de integración de un núcleo de emulación.
 enum CoreStatus {
@@ -42,9 +44,14 @@ bool Function() isWindowsDesktop = () => Platform.isWindows;
 /// Si la app corre en un iPhone o iPad. Se puede sustituir en pruebas.
 bool Function() isIOSDevice = () => Platform.isIOS;
 
+/// En iPhone, si el núcleo está dentro de la app (cada emulador se compila
+/// por separado y alguno puede faltar). Se puede sustituir en pruebas.
+bool Function(String? coreLibrary) iosHasCore = (lib) =>
+    lib != null && File(RetroNative.nativeLibraryPath(lib)).existsSync();
+
 /// Motivo común de las consolas que aún no están en iPhone.
 const iosPendingNote = 'Todavía no está en la versión de iPhone: llega en una próxima '
-    'actualización (iOS no permite el recompilador rápido que usa este emulador).';
+    'actualización.';
 
 /// Descriptor de una consola. Añadir una consola nueva significa añadir un
 /// descriptor aquí y su núcleo libretro en `native/`; la interfaz se adapta sola.
@@ -98,7 +105,8 @@ class ConsoleDescriptor {
   final String? iosNote;
 
   bool get _missingHere =>
-      (windowsNote != null && isWindowsDesktop()) || (iosNote != null && isIOSDevice());
+      (windowsNote != null && isWindowsDesktop()) ||
+      (iosNote != null && isIOSDevice() && !iosHasCore(coreLibrary));
 
   /// Estado en este dispositivo (en Windows algunas consolas aún no existen).
   CoreStatus get status => _missingHere ? CoreStatus.unavailable : _status;

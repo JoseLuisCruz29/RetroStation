@@ -15,14 +15,18 @@ set(GPSP_SRC
   ${GPSP}/main.c ${GPSP}/gba_memory.c ${GPSP}/savestate.c ${GPSP}/input.c ${GPSP}/sound.c
   ${GPSP}/cheats.c ${GPSP}/memmap.c ${GPSP}/serial.c ${GPSP}/gbp.c ${GPSP}/rfu.c
   ${GPSP}/serial_proto.c ${GPSP}/libretro/libretro.c ${GPSP}/gba_cc_lut.c
-  ${GPSP}/cpu_threaded.c
   ${GPSP_COMMON}/compat/compat_posix_string.c ${GPSP_COMMON}/compat/compat_strl.c
   ${GPSP_COMMON}/compat/fopen_utf8.c ${GPSP_COMMON}/encodings/encoding_utf.c
   ${GPSP_COMMON}/file/file_path.c ${GPSP_COMMON}/file/file_path_io.c
   ${GPSP_COMMON}/streams/file_stream.c ${GPSP_COMMON}/string/stdstring.c
   ${GPSP_COMMON}/time/rtime.c ${GPSP_COMMON}/vfs/vfs_implementation.c
 )
-if(ANDROID_ABI STREQUAL "armeabi-v7a")
+set(GPSP_DYNAREC HAVE_DYNAREC MMAP_JIT_CACHE)
+if(RS_IOS)
+  # Sin recompilador: iOS no permite generar código en tiempo real.
+  set(GPSP_ARCH IOS HAVE_POSIX_MEMALIGN)
+  set(GPSP_DYNAREC)
+elseif(ANDROID_ABI STREQUAL "armeabi-v7a")
   list(APPEND GPSP_SRC ${GPSP}/arm/arm_stub.S)
   set(GPSP_ARCH ARM_ARCH)
 elseif(ANDROID_ABI STREQUAL "arm64-v8a")
@@ -37,13 +41,16 @@ else()
   set(GPSP_ARCH X86_ARCH)
 endif()
 
+if(GPSP_DYNAREC)
+  list(APPEND GPSP_SRC ${GPSP}/cpu_threaded.c)
+endif()
 add_library(gpsp_libretro SHARED ${GPSP_SRC})
 target_include_directories(gpsp_libretro PRIVATE ${GPSP}/libretro ${GPSP_COMMON}/include ${GPSP})
 if(WIN32)
   target_include_directories(gpsp_libretro PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/compat/win)
 endif()
 target_compile_definitions(gpsp_libretro PRIVATE
-  INLINE=inline __LIBRETRO__ FRONTEND_SUPPORTS_RGB565 ${GPSP_ARCH} MMAP_JIT_CACHE HAVE_DYNAREC
+  INLINE=inline __LIBRETRO__ FRONTEND_SUPPORTS_RGB565 ${GPSP_ARCH} ${GPSP_DYNAREC}
   GIT_VERSION="5819380")
 # El recompilador genera código ARM (no Thumb), como LOCAL_ARM_MODE := arm.
 target_compile_options(gpsp_libretro PRIVATE -w -O2 -fno-strict-aliasing

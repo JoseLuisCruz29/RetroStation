@@ -72,6 +72,13 @@ if(ANDROID_ABI STREQUAL "arm64-v8a" OR ANDROID_ABI STREQUAL "armeabi-v7a")
          ${PCSX_CORE}/gte_neon.S ${PCSX_CORE}/gte_nf_neon.S ${PCSX_FE}/cspace_neon.S)
     list(APPEND PCSX_DEFS HAVE_bgr555_to_rgb565 HAVE_bgr888_to_x)
   endif()
+elseif(RS_IOS)
+  # iPhone: intérprete (iOS no permite JIT) con la GPU de NEON en C.
+  list(APPEND PCSX_DEFS DRC_DISABLE SIMD_BUILD)
+  list(APPEND PCSX_SRC ${PCSX_NEON}/psx_gpu/psx_gpu_simd.c
+       ${CMAKE_CURRENT_SOURCE_DIR}/compat/ios/pcsx_ios_map.c)
+  list(APPEND PCSX_INC ${PCSX_CORE})
+  list(REMOVE_ITEM PCSX_DEFS ANDROID)
 elseif(WIN32)
   # Windows: intérprete (lightrec necesita pthreads). Un PC va de sobra.
   list(APPEND PCSX_DEFS DRC_DISABLE)
@@ -132,6 +139,8 @@ if(WIN32)
     set(RS_CLANG_RT "${RS_CLANG_RES}/lib/windows/clang_rt.builtins-x86_64.lib")
   endif()
   target_link_libraries(pcsx_rearmed_libretro rs_zlib ws2_32 "${RS_CLANG_RT}")
+elseif(APPLE)
+  target_link_libraries(pcsx_rearmed_libretro z)
 else()
   target_link_libraries(pcsx_rearmed_libretro z log)
   target_link_options(pcsx_rearmed_libretro PRIVATE

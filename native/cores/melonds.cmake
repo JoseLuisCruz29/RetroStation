@@ -80,6 +80,8 @@ if(WIN32)
   target_compile_options(melonds_libretro PRIVATE
     $<$<COMPILE_LANGUAGE:C,CXX>:-include ${RS_WIN_COMPAT}/rs_posix_compat.h>)
   target_link_libraries(melonds_libretro ws2_32)
+elseif(APPLE)
+  # iPhone: sin JIT ni --version-script (el enlazador de Apple no lo admite).
 else()
   target_link_options(melonds_libretro PRIVATE -Wl,--version-script=${MDS_CORE}/link.T)
   target_link_libraries(melonds_libretro log)

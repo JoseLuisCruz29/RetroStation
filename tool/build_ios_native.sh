@@ -22,7 +22,16 @@ cmake -S "$root/native" -B "$build" -G Ninja \
   -DCMAKE_OSX_SYSROOT=iphoneos \
   -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
   -DCMAKE_INSTALL_NAME_DIR=@rpath
-cmake --build "$build" --parallel
+# El motor y los núcleos básicos son obligatorios. PS1, DS y gpSP se intentan
+# uno a uno: si alguno no compila, la app sale igual y esa consola aparece
+# como "próximamente" (Dart comprueba qué frameworks hay dentro de la app).
+cmake --build "$build" --parallel --target \
+  retrostation_native mgba_libretro fceumm_libretro snes9x_libretro gbalink_libretro
+for target in pcsx_rearmed_libretro melonds_libretro gpsp_libretro; do
+  if ! cmake --build "$build" --parallel --target "$target"; then
+    echo "::warning::$target no compiló para iPhone (su consola quedará como próximamente)"
+  fi
+done
 
 rm -rf "$out"
 mkdir -p "$out"

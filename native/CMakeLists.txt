@@ -30,7 +30,7 @@ endif()
 # iPhone (cmake -DCMAKE_SYSTEM_NAME=iOS): cada biblioteca .dylib se empaqueta
 # luego como .framework dentro de la app (tool/build_ios_native.sh). Primera
 # etapa: NES, SNES, GB/GBC/GBA y el cable link de GBA. iOS no deja generar
-# código en tiempo real (JIT), así que los recompiladores quedan fuera.
+# código en tiempo real (JIT): PS1, DS y gpSP usan sus intérpretes.
 if(CMAKE_SYSTEM_NAME STREQUAL "iOS")
   set(RS_IOS ON)
 endif()
@@ -179,13 +179,11 @@ set_target_properties(snes9x_libretro PROPERTIES PREFIX "lib" CXX_STANDARD 14)
 # Solo se exportan los símbolos retro_* (versión de enlace oficial).
 rs_version_script(snes9x_libretro ${SNES9X_DIR}/libretro/link.T)
 
-if(NOT RS_IOS AND (NOT WIN32 OR RS_WINDOWS_EXTRA_CORES))
+if(NOT WIN32 OR RS_WINDOWS_EXTRA_CORES)
   include(cores/pcsx_rearmed.cmake)
   include(cores/melonds.cmake)
 endif()
-if(NOT RS_IOS)
-  include(cores/gpsp.cmake)  # su recompilador necesita JIT
-endif()
+include(cores/gpsp.cmake)
 include(cores/gbalink.cmake)
 if(ANDROID)
   include(cores/desmume.cmake)
