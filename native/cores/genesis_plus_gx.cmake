@@ -14,7 +14,10 @@ set(GPGX_DIRS core core/z80 core/m68k core/ntsc core/sound core/sound/minimp3
 set(GPGX_SRC)
 set(GPGX_INC ${GPGX}/libretro ${GPGX_LRC}/include
     ${GPGX_DEPS}/libchdr/include ${GPGX_DEPS}/lzma-19.00/include
-    ${GPGX_DEPS}/zlib-1.2.11 ${GPGX_DEPS}/zstd/lib ${GPGX}/core/sound/tremor)
+    ${GPGX_DEPS}/zlib-1.2.11 ${GPGX_DEPS}/zstd/lib)
+# core/sound/tremor no va en las rutas de búsqueda: su Block.h choca con el
+# <Block.h> del sistema en Apple (sistema de archivos sin mayúsculas). El
+# núcleo ya lo incluye como "tremor/ivorbisfile.h".
 foreach(dir ${GPGX_DIRS})
   file(GLOB files ${GPGX}/${dir}/*.c)
   list(APPEND GPGX_SRC ${files})
