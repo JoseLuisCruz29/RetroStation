@@ -343,14 +343,14 @@ void video_refresh_cb(const void* data, unsigned width, unsigned height, size_t 
       std::lock_guard<std::mutex> frame_lock(g.frame_mutex);
       g.last_w = width;
       g.last_h = height;
-#ifdef _WIN32
-      // Sin superficie nativa: se lee el FBO y se entrega como un fotograma
-      // normal a la ventana de Flutter (rs_copy_frame).
+#if defined(_WIN32) || defined(__APPLE__)
+      // Sin superficie nativa (Windows, iPhone): se lee el FBO y se entrega
+      // como un fotograma normal a Flutter (rs_copy_frame).
       unsigned w = width, h = height;
       rs::hw::capture(g.last_frame, w, h);
 #endif
     }
-#ifdef _WIN32
+#if defined(_WIN32) || defined(__APPLE__)
     if (auto cb = g_frame_cb.load()) cb(g_frame_cb_user.load());
 #endif
     rs::hw::present(width, height);

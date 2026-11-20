@@ -33,6 +33,20 @@ for target in genesis_plus_gx_libretro pcsx_rearmed_libretro melonds_libretro gp
   fi
 done
 
+# PSP: PPSSPP con su CMake oficial (-DLIBRETRO=ON, que admite iOS). Sin JIT en
+# iPhone: usa su intérprete IR. Si no compila, la app sale sin PSP.
+ppsspp_build="$root/build/ios-ppsspp"
+if cmake -S "$root/native/third_party/ppsspp" -B "$ppsspp_build" -G Ninja \
+     -DCMAKE_BUILD_TYPE=Release -DCMAKE_SYSTEM_NAME=iOS -DCMAKE_OSX_ARCHITECTURES=arm64 \
+     -DCMAKE_OSX_DEPLOYMENT_TARGET=$min_ios -DCMAKE_OSX_SYSROOT=iphoneos \
+     -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DLIBRETRO=ON -DUSE_DISCORD=OFF \
+     -DUSE_SYSTEM_LIBPNG=OFF -DUNITTEST=OFF -DHEADLESS=OFF \
+   && cmake --build "$ppsspp_build" --parallel --target ppsspp_libretro; then
+  cp "$(find "$ppsspp_build" -name 'ppsspp_libretro.dylib' | head -1)" "$build/libppsspp_libretro.dylib"
+else
+  echo "::warning::PPSSPP no compiló para iPhone (PSP quedará como próximamente)"
+fi
+
 rm -rf "$out"
 mkdir -p "$out"
 version=$(grep '^version:' "$root/pubspec.yaml" | sed -E 's/version: *([0-9.]+).*/\1/')

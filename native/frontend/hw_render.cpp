@@ -292,7 +292,7 @@ bool window_change_pending() {
 
 }  // namespace rs::hw
 
-#elif !defined(_WIN32)  // Pruebas en el PC (Linux): sin renderizado por hardware.
+#elif !defined(_WIN32) && !defined(__APPLE__)  // Pruebas en el PC (Linux): sin GPU.
 
 namespace rs::hw {
 bool request(retro_hw_render_callback*) { return false; }

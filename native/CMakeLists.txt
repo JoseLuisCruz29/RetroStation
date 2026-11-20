@@ -213,8 +213,14 @@ elseif(WIN32)
   # zlib (estados del multijugador): rs_zlib, definida al principio.
   target_link_libraries(retrostation_native rs_zlib ws2_32 ole32 opengl32)
 elseif(APPLE)
-  # Sonido con CoreAudio (RemoteIO); zlib viene con el sistema.
-  target_link_libraries(retrostation_native "-framework AudioToolbox" "-framework CoreFoundation" z)
+  # Sonido con CoreAudio (RemoteIO); PSP dibuja con OpenGL ES (EAGL); zlib
+  # viene con el sistema.
+  enable_language(OBJCXX)
+  target_sources(retrostation_native PRIVATE frontend/hw_render_ios.mm)
+  set_source_files_properties(frontend/hw_render_ios.mm PROPERTIES COMPILE_FLAGS "-fobjc-arc")
+  target_compile_definitions(retrostation_native PRIVATE GLES_SILENCE_DEPRECATION)
+  target_link_libraries(retrostation_native "-framework AudioToolbox" "-framework CoreFoundation"
+    "-framework Foundation" "-framework OpenGLES" z)
 endif()
 # El núcleo se carga en tiempo de ejecución, pero debe compilarse siempre
 # junto al frontend para que se empaquete con la app.

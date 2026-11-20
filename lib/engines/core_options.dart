@@ -3,6 +3,7 @@ import 'package:drift/drift.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../storage/database.dart';
+import 'console.dart';
 import 'console_registry.dart';
 import '../storage/storage_providers.dart';
 
@@ -108,10 +109,11 @@ abstract final class CoreOptions {
             // Se compila sin temporización avanzada (ver native/cores/desmume.cmake).
             'desmume_advanced_timing': 'disabled',
           },
-        // PPSSPP: JIT, resolución nativa de la PSP (la GPU del móvil escala la
-        // imagen) y OpenGL ES, que es lo que ofrece el frontend.
-        ('psp', _) => const {
-            'ppsspp_cpu_core': 'JIT',
+        // PPSSPP: JIT (en iPhone, su intérprete IR: iOS no permite JIT),
+        // resolución nativa de la PSP (la GPU del móvil escala la imagen) y
+        // OpenGL ES, que es lo que ofrece el frontend.
+        ('psp', _) => {
+            'ppsspp_cpu_core': isIOSDevice() ? 'IR JIT' : 'JIT',
             'ppsspp_backend': 'opengl',
             'ppsspp_internal_resolution': '480x272',
             'ppsspp_fast_memory': 'enabled',
