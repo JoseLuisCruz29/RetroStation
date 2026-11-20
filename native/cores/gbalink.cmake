@@ -69,4 +69,7 @@ elseif(WIN32)
   # La biblioteca de mGBA usa el runtime de C dinámico (el mismo que Flutter).
   set_target_properties(gbalink_libretro PROPERTIES MSVC_RUNTIME_LIBRARY "MultiThreadedDLL")
   target_link_libraries(gbalink_libretro ws2_32 shlwapi)
+elseif(APPLE)
+  # La configuración de mGBA busca la carpeta de la app con CoreFoundation.
+  target_link_libraries(gbalink_libretro "-framework CoreFoundation")
 endif()
