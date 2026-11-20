@@ -179,6 +179,7 @@ set_target_properties(snes9x_libretro PROPERTIES PREFIX "lib" CXX_STANDARD 14)
 # Solo se exportan los símbolos retro_* (versión de enlace oficial).
 rs_version_script(snes9x_libretro ${SNES9X_DIR}/libretro/link.T)
 
+include(cores/genesis_plus_gx.cmake)
 if(NOT WIN32 OR RS_WINDOWS_EXTRA_CORES)
   include(cores/pcsx_rearmed.cmake)
   include(cores/melonds.cmake)
@@ -220,7 +221,8 @@ endif()
 # (En iPhone no: cada núcleo se compila por separado y uno que falle no debe
 # impedir compilar el motor; ver tool/build_ios_native.sh.)
 foreach(core mgba_libretro fceumm_libretro snes9x_libretro pcsx_rearmed_libretro
-             melonds_libretro gpsp_libretro desmume2015_libretro gbalink_libretro)
+             melonds_libretro gpsp_libretro desmume2015_libretro gbalink_libretro
+             genesis_plus_gx_libretro)
   if(TARGET ${core} AND NOT RS_IOS)
     add_dependencies(retrostation_native ${core})
   endif()

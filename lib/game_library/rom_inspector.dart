@@ -99,6 +99,22 @@ abstract final class RomInspector {
           sha1: sha1.convert(bytes).toString(),
           size: size,
         );
+      case 'genesis':
+        if (size < 0x200) return RejectedRom(path, 'Archivo demasiado pequeño');
+        if (size > 16 * 1024 * 1024) return RejectedRom(path, 'Mayor de 16 MB');
+        final bytes = file.readAsBytesSync();
+        if (ext.toLowerCase() != '.smd' &&
+            !String.fromCharCodes(bytes.sublist(0x100, 0x104)).startsWith('SEGA') &&
+            !String.fromCharCodes(bytes.sublist(0x101, 0x105)).startsWith('SEGA')) {
+          return RejectedRom(path, 'No parece un juego de Mega Drive (falta "SEGA" en la cabecera)');
+        }
+        return ValidRom(
+          path,
+          consoleId: 'genesis',
+          title: titleFromFileName(path) ?? 'Sin título',
+          sha1: sha1.convert(bytes).toString(),
+          size: size,
+        );
       case 'psx':
         return _inspectPsx(path, file, size, ext.toLowerCase());
       case 'nds':

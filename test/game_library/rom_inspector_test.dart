@@ -57,6 +57,22 @@ void main() {
     expect(RomInspector.inspect(path), isA<RejectedRom>());
   });
 
+  test('Mega Drive: acepta "SEGA" en la cabecera y rechaza otros archivos', () {
+    final rom = Uint8List(0x20000);
+    rom.setAll(0x100, 'SEGA MEGA DRIVE '.codeUnits);
+    final good = File(p.join(tmp.path, 'Juego (USA).md'))..writeAsBytesSync(rom);
+    final result = RomInspector.inspect(good.path);
+    expect(result, isA<ValidRom>(), reason: result.toString());
+    expect((result as ValidRom).consoleId, 'genesis');
+    expect(result.title, 'Juego (USA)');
+
+    final bad = File(p.join(tmp.path, 'falso.gen'))..writeAsBytesSync(Uint8List(0x20000));
+    expect(RomInspector.inspect(bad.path), isA<RejectedRom>());
+    // .smd (entrelazado): solo se comprueba el tamaño.
+    final smd = File(p.join(tmp.path, 'otro.smd'))..writeAsBytesSync(Uint8List(0x20200));
+    expect(RomInspector.inspect(smd.path), isA<ValidRom>());
+  });
+
   test('SNES: acepta ROMs reales (con y sin cabecera de copiadora) y rechaza falsos', () {
     for (final name in ['inidisp_brightness_delay.sfc', 'hdma-2100-glitch.sfc']) {
       final r = RomInspector.inspect(p.join('test/fixtures/snes-test-roms', name));

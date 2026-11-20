@@ -7,7 +7,7 @@ import '../game_library/game_repository.dart';
 
 /// Consolas con juego compartido por la red (los dos teléfonos ejecutan el
 /// mismo juego): sus núcleos guardan estados y son deterministas.
-const sharedPlayConsoles = {'nes', 'snes', 'psx'};
+const sharedPlayConsoles = {'nes', 'snes', 'psx', 'genesis'};
 
 /// Núcleo con cable link / adaptador inalámbrico de GBA por red.
 const linkCoreLibrary = 'libgpsp_libretro.so';

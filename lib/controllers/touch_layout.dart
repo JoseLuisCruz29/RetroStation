@@ -108,6 +108,7 @@ abstract final class TouchLayout {
       // PlayStation: mismo rombo con ○ (A), ✕ (B), △ (X), □ (Y); L/R = L1/R1.
       'psx' => _snesFaceButtons(base, labels: psxLabels),
       'psp' => _psp(_snesFaceButtons(base, labels: psxLabels), area, landscape: landscape),
+      'genesis' => _genesisFaceButtons(base),
       _ => base,
     };
   }
@@ -176,6 +177,23 @@ abstract final class TouchLayout {
       _face('b', RetroButton.b, labels.b, center + Offset(0, r), d),
       _face('x', RetroButton.x, labels.x, center + Offset(0, -r), d),
       _face('y', RetroButton.y, labels.y, center + Offset(-r, 0), d),
+    ];
+  }
+
+  /// Mega Drive: A, B y C en diagonal ascendente, sin L/R ni SELECT. En
+  /// Genesis Plus GX, A = Y, B = B y C = A de libretro.
+  static List<ControlRegion> _genesisFaceButtons(List<ControlRegion> base) {
+    final a = base.firstWhere((r) => r.id == 'a');
+    final b = base.firstWhere((r) => r.id == 'b');
+    final center = Offset((a.center.dx + b.center.dx) / 2, (a.center.dy + b.center.dy) / 2);
+    final d = a.size.width * 0.85;
+    final step = d * 1.05;
+    return [
+      for (final region in base)
+        if (!const {'a', 'b', 'l', 'r', 'select'}.contains(region.id)) region,
+      _face('y', RetroButton.y, 'A', center + Offset(-step, step * 0.3), d),
+      _face('b', RetroButton.b, 'B', center, d),
+      _face('a', RetroButton.a, 'C', center + Offset(step, -step * 0.3), d),
     ];
   }
 
