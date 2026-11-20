@@ -1,0 +1,83 @@
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.build/
+.buildlog/
+.history
+.svn/
+.swiftpm/
+migrate_working_dir/
+
+# IntelliJ related
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# The .vscode folder contains launch configuration and tasks you configure in
+# VS Code which you may wish to be included in version control, so this line
+# is commented out by default.
+#.vscode/
+
+# Flutter/Dart/Pub related
+**/doc/api/
+**/ios/Flutter/.last_build_id
+.dart_tool/
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+/build/
+/coverage/
+
+# Symbolication related
+app.*.symbols
+
+# Obfuscation related
+app.*.map.json
+
+# Android Studio will place build artifacts here
+/android/app/debug
+/android/app/profile
+/android/app/release
+
+# Widget Preview related
+.widget_preview/
+
+# --- RetroStation ---
+# Juegos comerciales: NUNCA se suben. Solo los homebrew de bundled.json.
+/assets/bundled/*
+!/assets/bundled/bundled.json
+!/assets/bundled/LEEME.md
+!/assets/bundled/croom.nes
+!/assets/bundled/croom.png
+!/assets/bundled/gbatris.gba
+!/assets/bundled/gbatris.png
+!/assets/bundled/nova.nes
+!/assets/bundled/novathesquirrel.png
+!/assets/bundled/thwaite128.nes
+!/assets/bundled/thwaite.png
+!/assets/bundled/ur4guys.gbc
+!/assets/bundled/ur4guys.png
+!/assets/bundled/waternet.gbc
+!/assets/bundled/waternet.png
+
+# Compilados y paquetes (se generan con tool/*.ps1 y flutter build)
+/apk/
+/windows/native_bin/
+/android/app/src/main/jniLibs/
+*.apk
+*.aab
+*.ipa
+*.exe
+!/test/fixtures/psx/*.exe
+
+# Secretos y configuración local
+/android/key.properties
+*.jks
+*.keystore
+/android/local.properties
+.env*

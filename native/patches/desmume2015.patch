@@ -1,0 +1,137 @@
+diff --git a/desmume/src/GPU.cpp b/desmume/src/GPU.cpp
+index 363cd69..b46714f 100644
+--- a/desmume/src/GPU.cpp
++++ b/desmume/src/GPU.cpp
+@@ -2691,6 +2691,16 @@ void GPUEngineBase::BlitNativeToCustomFramebuffer()
+ 	u16 *dst = this->customBuffer;
+ 	u16 *dstLine = this->customBuffer;
+ 	
++	// RetroStation: a resolución nativa no hay nada que escalar; una copia en
++	// bloque sustituye al bucle píxel a píxel con tablas de escalado.
++	if (dispInfo.customWidth == GPU_FRAMEBUFFER_NATIVE_WIDTH &&
++	    dispInfo.customHeight == GPU_FRAMEBUFFER_NATIVE_HEIGHT)
++	{
++		memcpy(dst, src, GPU_FRAMEBUFFER_NATIVE_WIDTH * GPU_FRAMEBUFFER_NATIVE_HEIGHT * sizeof(u16));
++		GPU->SetDisplayDidCustomRender(this->_targetDisplayID, true);
++		return;
++	}
++	
+ 	for (size_t y = 0; y < GPU_FRAMEBUFFER_NATIVE_HEIGHT; y++)
+ 	{
+ 		for (size_t x = 0; x < GPU_FRAMEBUFFER_NATIVE_WIDTH; x++)
+diff --git a/desmume/src/MMU_timing.h b/desmume/src/MMU_timing.h
+index 7bf8f8f..70cab6c 100644
+--- a/desmume/src/MMU_timing.h
++++ b/desmume/src/MMU_timing.h
+@@ -41,7 +41,10 @@
+  */
+ 
+ /* disable this to prevent the advanced timing logic from ever running at all */
++/* RetroStation: -DRS_NO_ADVANCED_TIMING la quita al compilar (moviles lentos). */
++#ifndef RS_NO_ADVANCED_TIMING
+ #define ENABLE_ADVANCED_TIMING
++#endif
+ 
+ #ifdef ENABLE_ADVANCED_TIMING
+ /* makes non-sequential accesses slower than sequential ones. */
+diff --git a/desmume/src/matrix.h b/desmume/src/matrix.h
+index 374ca28..8ba6a54 100644
+--- a/desmume/src/matrix.h
++++ b/desmume/src/matrix.h
+@@ -93,7 +93,12 @@ FORCEINLINE s32 s32floor(float f)
+ #ifdef ENABLE_SSE2
+ 	return _mm_cvtss_si32( _mm_add_ss(_mm_set_ss(-0.5f),_mm_add_ss(_mm_set_ss(f), _mm_set_ss(f))) ) >> 1;
+ #else
+-	return (s32)floorf(f);
++	// RetroStation: en ARM floorf() es una llamada a libm por cada píxel 3D.
++	// Para valores en el rango de s32 (los únicos que se usan aquí) esto da
++	// exactamente el mismo resultado: truncar y restar 1 si era negativo
++	// con parte decimal.
++	const s32 i = (s32)f;
++	return i - (s32)(f < (float)i);
+ #endif
+ }
+ FORCEINLINE s32 s32floor(double d)
+diff --git a/desmume/src/utils/arm_arm/arm_jit.cpp b/desmume/src/utils/arm_arm/arm_jit.cpp
+index 221910f..d0c153c 100644
+--- a/desmume/src/utils/arm_arm/arm_jit.cpp
++++ b/desmume/src/utils/arm_arm/arm_jit.cpp
+@@ -179,6 +179,53 @@ static u32 FASTCALL OP_DECODE()
+ 
+ static const ArmOpCompiled op_decode[2][2] = { OP_DECODE<0,0>, OP_DECODE<0,1>, OP_DECODE<1,0>, OP_DECODE<1,1> };
+ 
++// RetroStation: instrucción que el JIT no traduce, con su código y dirección
++// ya conocidos al compilar el bloque. Antes se llamaba a armcpu_exec(), que
++// volvía a leer la instrucción de memoria, la decodificaba y además leía la
++// siguiente (armcpu_prefetch). Aquí se ejecuta directamente y se deja el
++// mismo estado (instruct_adr, next_instruction, R15) y los mismos ciclos.
++template<int PROCNUM, int thumb>
++static u32 FASTCALL OP_INTERP_KNOWN(u32 opcode, u32 adr)
++{
++   armcpu_t* const cpu = &ARMPROC;
++   const u32 isize = thumb ? 2 : 4;
++   cpu->instruct_adr = adr;
++   cpu->next_instruction = adr + isize;
++   cpu->R[15] = adr + 2 * isize;
++   cpu->instruction = opcode;
++
++   u32 cExecute;
++   if (thumb)
++      cExecute = thumb_instructions_set[PROCNUM][opcode >> 6](opcode);
++   else if (CONDITION(opcode) == 0xE || TEST_COND(CONDITION(opcode), CODE(opcode), cpu->CPSR))
++      cExecute = arm_instructions_set[PROCNUM][INSTRUCTION_INDEX(opcode)](opcode);
++   else
++      cExecute = 1;
++
++   // Lo que haría armcpu_prefetch(), salvo leer el código de la siguiente
++   // instrucción (el bloque compilado ya lo conoce, o termina aquí).
++   u32 next = cpu->next_instruction;
++   u32 cFetch;
++   if (cpu->CPSR.bits.T == 0)
++   {
++      next &= 0xFFFFFFFC;
++      cpu->instruct_adr = next;
++      cpu->next_instruction = next + 4;
++      cpu->R[15] = next + 8;
++      cFetch = MMU_codeFetchCycles<PROCNUM,32>(next);
++   }
++   else
++   {
++      next &= 0xFFFFFFFE;
++      cpu->instruct_adr = next;
++      cpu->next_instruction = next + 2;
++      cpu->R[15] = next + 4;
++      cFetch = PROCNUM == 0 ? MMU_codeFetchCycles<PROCNUM,32>(next)
++                            : MMU_codeFetchCycles<PROCNUM,16>(next);
++   }
++   return MMU_fetchExecuteCycles<PROCNUM>(cExecute, cFetch);
++}
++
+ 
+ enum OP_RESULT { OPR_CONTINUE, OPR_INTERPRET, OPR_BRANCHED, OPR_RESULT_SIZE = 2147483647 };
+ #define OPR_RESULT(result, cycles) (OP_RESULT)((result) | ((cycles) << 16));
+@@ -1413,17 +1460,17 @@ static ArmOpCompiled compile_basicblock()
+       {
+          case OPR_INTERPRET:
+          {
+-            if (compiled_op)
+-            {
+-               arm_jit_prefetch<PROCNUM>(pc, opcode, thumb);
+-               compiled_op = false;
+-            }
++            compiled_op = false;
+ 
+             regman->flush_all();
+             regman->reset();
+ 
+-            block->load_constant(0, (uint32_t)&armcpu_exec<PROCNUM>);
+-            call(0);
++            // RetroStation: llamada directa con el código ya conocido.
++            block->load_constant(0, opcode);
++            block->load_constant(1, pc);
++            block->load_constant(2, thumb ? (uint32_t)&OP_INTERP_KNOWN<PROCNUM,1>
++                                          : (uint32_t)&OP_INTERP_KNOWN<PROCNUM,0>);
++            call(2);
+             block->add(RCYC, alu2::reg(0));
+ 
+             has_ended = has_ended || instr_is_branch(thumb, opcode);

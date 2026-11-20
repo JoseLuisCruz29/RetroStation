@@ -1,0 +1,36 @@
+diff --git a/Common/Render/Text/draw_text_uwp.cpp b/Common/Render/Text/draw_text_uwp.cpp
+index 5b69551..570a46c 100644
+--- a/Common/Render/Text/draw_text_uwp.cpp
++++ b/Common/Render/Text/draw_text_uwp.cpp
+@@ -11,7 +11,7 @@
+ #include "Common/StringUtils.h"
+ #include "Common/File/Path.h"
+ 
+-#if defined(_WIN32)
++#if defined(_WIN32) && !defined(__LIBRETRO__)
+ 
+ #include <string>
+ 
+diff --git a/libretro/Makefile.common b/libretro/Makefile.common
+index 7ce949c..d7684e7 100644
+--- a/libretro/Makefile.common
++++ b/libretro/Makefile.common
+@@ -989,6 +989,8 @@ ifeq ($(WITH_DYNAREC),1)
+ 		     $(COREDIR)/MIPS/ARM64/Arm64IRRegCache.cpp \
+ 		     $(COREDIR)/Util/DisArm64.cpp \
+ 		     $(GPUCOMMONDIR)/VertexDecoderArm64.cpp
++      # RetroStation: libpng activa NEON solo en arm64 y faltaban sus fuentes.
++      SOURCES_C += $(EXTDIR)/libpng17/arm/arm_init.c $(EXTDIR)/libpng17/arm/filter_neon_intrinsics.c
+    else
+ 	ifneq (,$(findstring msvc,$(platform)))
+ 	ifeq (,$(findstring x64,$(platform)))
+@@ -1166,7 +1168,8 @@ ifneq (,$(findstring $(GIT_VERSION),$(shell grep -s char $(GIT_VERSION_SRC))))
+    GIT_VERSION_NO_UPDATE = 1
+ endif
+ 
+-ifneq ($(GIT_VERSION_NO_UPDATE),1)
++# RetroStation: solo si no existe (en Windows no hay grep y lo regeneraba con comillas).
++ifeq (,$(wildcard $(GIT_VERSION_SRC)))
+    $(shell echo 'const char *PPSSPP_GIT_VERSION = "${GIT_VERSION}";' > $(GIT_VERSION_SRC))
+    $(shell echo '#define PPSSPP_GIT_VERSION_NO_UPDATE 0' >> $(GIT_VERSION_SRC))
+ endif

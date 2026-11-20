@@ -1,0 +1,55 @@
+[
+  {
+    "file": "gbatris.gba",
+    "title": "GBAtris",
+    "cover": "gbatris.png",
+    "developer": "John Tsiombikas, Greig Stewart",
+    "license": "GPL-3.0-or-later",
+    "source": "https://github.com/jtsiomb/gbatris",
+    "page": "https://hh.gbdev.io/game/gbatris"
+  },
+  {
+    "file": "waternet.gbc",
+    "title": "Waternet",
+    "cover": "waternet.png",
+    "developer": "Willems Davy",
+    "license": "MIT",
+    "source": "https://github.com/joyrider3774/waternet",
+    "page": "https://hh.gbdev.io/game/waternet"
+  },
+  {
+    "file": "ur4guys.gbc",
+    "title": "U R 4 GUYS",
+    "cover": "ur4guys.png",
+    "developer": "Wolfman Digital",
+    "license": "CC-BY-NC-4.0 (juego y recursos)",
+    "page": "https://hh.gbdev.io/game/ur4guys"
+  },
+  {
+    "file": "nova.nes",
+    "title": "Nova the Squirrel",
+    "cover": "novathesquirrel.png",
+    "developer": "Nova Squirrel",
+    "license": "Juego: GPL-3.0-or-later · Recursos: CC-BY-NC-SA-4.0",
+    "source": "https://github.com/NovaSquirrel/NovaTheSquirrel",
+    "page": "https://hh.gbdev.io/game/novathesquirrel"
+  },
+  {
+    "file": "thwaite128.nes",
+    "title": "Thwaite",
+    "cover": "thwaite.png",
+    "developer": "Damian Yerrick",
+    "license": "GPL-3.0-or-later",
+    "source": "https://github.com/pinobatch/thwaite-nes",
+    "page": "https://hh.gbdev.io/game/thwaite"
+  },
+  {
+    "file": "croom.nes",
+    "title": "Concentration Room",
+    "cover": "croom.png",
+    "developer": "Damian Yerrick",
+    "license": "GPL-3.0-or-later",
+    "source": "https://github.com/pinobatch/croom-nes",
+    "page": "https://hh.gbdev.io/game/croom"
+  }
+]

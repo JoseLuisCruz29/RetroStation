@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Android 12+: pantalla de carga del sistema con el símbolo de RetroStation. -->
+    <style name="LaunchTheme" parent="@android:style/Theme.Black.NoTitleBar">
+        <item name="android:windowSplashScreenBackground">@color/brand_ink</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/splash_icon</item>
+        <!-- Círculo claro detrás del logo (sus contornos son oscuros). -->
+        <item name="android:windowSplashScreenIconBackgroundColor">#F3F5F6</item>
+        <item name="android:windowBackground">@color/brand_ink</item>
+    </style>
+    <style name="NormalTheme" parent="@android:style/Theme.Black.NoTitleBar">
+        <item name="android:windowBackground">@color/brand_ink</item>
+    </style>
+</resources>
