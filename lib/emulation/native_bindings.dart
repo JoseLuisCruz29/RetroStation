@@ -171,7 +171,7 @@ class RetroNative {
 
   static RetroNative? _instance;
 
-  /// El motor está compilado para Android y Windows (iOS: pendiente).
+  /// El motor está compilado para Android, Windows e iPhone.
   static RetroNative get instance {
     if (Platform.isAndroid) {
       return _instance ??= RetroNative._(DynamicLibrary.open('libretrostation_native.so'));
@@ -179,13 +179,28 @@ class RetroNative {
     if (Platform.isWindows) {
       return _instance ??= RetroNative._(DynamicLibrary.open(nativeLibraryPath('retrostation_native.dll')));
     }
+    if (Platform.isIOS) {
+      return _instance ??= RetroNative._(DynamicLibrary.open(nativeLibraryPath('retrostation_native')));
+    }
     throw UnsupportedError('El motor de emulación no está compilado para este sistema');
   }
 
   /// Ruta de una biblioteca nativa. En Android el sistema las encuentra por
   /// su nombre (vienen en el APK); en Windows están junto al .exe, y los
   /// núcleos se llaman igual pero terminan en .dll (libmgba_libretro.dll).
+  ///
+  /// En iPhone cada biblioteca va como framework dentro de la app:
+  /// Runner.app/Frameworks/libmgba_libretro.framework/libmgba_libretro.
   static String nativeLibraryPath(String name) {
+    if (Platform.isIOS) {
+      var base = name;
+      for (final ext in const ['.so', '.dll', '.dylib']) {
+        if (base.endsWith(ext)) base = base.substring(0, base.length - ext.length);
+      }
+      if (base == 'libretrostation_native') base = 'retrostation_native';
+      final app = File(Platform.resolvedExecutable).parent.path;
+      return '$app/Frameworks/$base.framework/$base';
+    }
     if (!Platform.isWindows) return name;
     final dll = name.endsWith('.so') ? '${name.substring(0, name.length - 3)}.dll' : name;
     final dir = File(Platform.resolvedExecutable).parent.path;

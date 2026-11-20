@@ -74,6 +74,20 @@ void main() {
     }
   });
 
+  test('en iPhone: sin PS1, DS ni PSP por ahora, y sin el link de Pokémon (gpSP)', () {
+    isIOSDevice = () => true;
+    addTearDown(() => isIOSDevice = () => false);
+    for (final id in ['psx', 'nds', 'psp']) {
+      expect(ConsoleRegistry.byId(id)!.status, CoreStatus.unavailable, reason: id);
+      expect(ConsoleRegistry.byId(id)!.note, contains('iPhone'));
+    }
+    for (final id in ['nes', 'snes', 'gb', 'gbc', 'gba']) {
+      expect(ConsoleRegistry.byId(id)!.status, CoreStatus.available, reason: id);
+    }
+    final poke = [game('emerald', 'gba', poke: true)];
+    expect(experiencesFor(poke, poke).map((e) => e.mode), [NetMode.gbaLink]);
+  });
+
   test('LanGame y Experience se envían y reciben por JSON', () {
     final g = game('abc', 'gba', poke: true, title: 'Pokémon Esmeralda');
     final back = LanGame.listFromJson([g.toJson(), 'basura', {'sha1': 1}]);

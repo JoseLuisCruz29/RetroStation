@@ -66,13 +66,14 @@ class AudioOutput {
   bool open_aaudio(double core_sample_rate);
   bool open_opensl(double core_sample_rate);
   bool open_wasapi(double core_sample_rate);  // Windows
+  bool open_coreaudio(double core_sample_rate);  // iPhone (RemoteIO)
 
  public:
   // Usado por el callback de OpenSL ES: rellena y encola el siguiente bloque.
   void opensl_enqueue_next();
 
  private:
-  enum class Backend { none, aaudio, opensl, wasapi };
+  enum class Backend { none, aaudio, opensl, wasapi, coreaudio };
   Backend backend_ = Backend::none;
   // Windows: hilo de audio WASAPI (definido en audio_output.cpp).
   struct WasapiState;

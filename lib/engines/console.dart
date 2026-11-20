@@ -39,6 +39,13 @@ bool Function() isArm32Process = () => Abi.current() == Abi.androidArm;
 /// Si la app corre en Windows (versión de escritorio). Se puede sustituir en pruebas.
 bool Function() isWindowsDesktop = () => Platform.isWindows;
 
+/// Si la app corre en un iPhone o iPad. Se puede sustituir en pruebas.
+bool Function() isIOSDevice = () => Platform.isIOS;
+
+/// Motivo común de las consolas que aún no están en iPhone.
+const iosPendingNote = 'Todavía no está en la versión de iPhone: llega en una próxima '
+    'actualización (iOS no permite el recompilador rápido que usa este emulador).';
+
 /// Descriptor de una consola. Añadir una consola nueva significa añadir un
 /// descriptor aquí y su núcleo libretro en `native/`; la interfaz se adapta sola.
 class ConsoleDescriptor {
@@ -56,6 +63,7 @@ class ConsoleDescriptor {
     this._note,
     required this._status,
     this.windowsNote,
+    this.iosNote,
     required this.plannedStage,
     required this.color,
     this.supportsRewind = true,
@@ -86,13 +94,21 @@ class ConsoleDescriptor {
   /// Si no es null, la consola no está en la versión de Windows y este es el motivo.
   final String? windowsNote;
 
-  bool get _missingHere => windowsNote != null && isWindowsDesktop();
+  /// Si no es null, la consola no está en la versión de iPhone y este es el motivo.
+  final String? iosNote;
+
+  bool get _missingHere =>
+      (windowsNote != null && isWindowsDesktop()) || (iosNote != null && isIOSDevice());
 
   /// Estado en este dispositivo (en Windows algunas consolas aún no existen).
   CoreStatus get status => _missingHere ? CoreStatus.unavailable : _status;
 
   /// Explicación visible cuando el núcleo no está disponible.
-  String? get note => _missingHere ? windowsNote : _note;
+  String? get note => !_missingHere
+      ? _note
+      : isIOSDevice()
+          ? iosNote
+          : windowsNote;
 
   /// Etapa del plan en la que se integra el núcleo.
   final int plannedStage;

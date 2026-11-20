@@ -86,6 +86,7 @@ class ConsoleRegistry {
     ),
     ConsoleDescriptor(
       id: 'psx',
+      iosNote: iosPendingNote,
       libretroSystem: 'Sony - PlayStation',
       name: 'PlayStation',
       shortName: 'PS1',
@@ -102,6 +103,7 @@ class ConsoleRegistry {
     ),
     ConsoleDescriptor(
       id: 'nds',
+      iosNote: iosPendingNote,
       libretroSystem: 'Nintendo - Nintendo DS',
       name: 'Nintendo DS',
       shortName: 'NDS',
@@ -127,6 +129,7 @@ class ConsoleRegistry {
     ),
     ConsoleDescriptor(
       id: 'psp',
+      iosNote: iosPendingNote,
       libretroSystem: 'Sony - PlayStation Portable',
       name: 'PlayStation Portable',
       shortName: 'PSP',

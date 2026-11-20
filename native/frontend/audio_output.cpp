@@ -31,6 +31,11 @@
 #include <thread>
 #endif
 
+#ifdef __APPLE__
+#include <AudioToolbox/AudioToolbox.h>
+#include <TargetConditionals.h>
+#endif
+
 namespace rs {
 
 // --- StereoRing --------------------------------------------------------------
@@ -175,6 +180,8 @@ bool AudioOutput::open(double core_sample_rate) {
   return open_opensl(core_sample_rate);
 #elif defined(_WIN32)
   return open_wasapi(core_sample_rate);
+#elif defined(__APPLE__)
+  return open_coreaudio(core_sample_rate);
 #else
   (void)core_sample_rate;
   return false;
@@ -384,6 +391,64 @@ bool AudioOutput::open_wasapi(double core_sample_rate) {
 bool AudioOutput::open_wasapi(double) { return false; }
 #endif
 
+// --- iPhone (CoreAudio, unidad RemoteIO) -----------------------------------------
+// El sistema llama a rs_coreaudio_render desde su hilo de audio con el búfer
+// que hay que rellenar: 48 kHz, estéreo, 16 bits intercalados (iOS convierte
+// al formato del altavoz o los auriculares).
+
+#ifdef __APPLE__
+namespace {
+OSStatus rs_coreaudio_render(void* ref, AudioUnitRenderActionFlags*, const AudioTimeStamp*, UInt32,
+                             UInt32 frames, AudioBufferList* io) {
+  auto* self = static_cast<AudioOutput*>(ref);
+  self->render(static_cast<int16_t*>(io->mBuffers[0].mData), static_cast<int32_t>(frames));
+  return noErr;
+}
+}  // namespace
+
+bool AudioOutput::open_coreaudio(double core_sample_rate) {
+  AudioComponentDescription desc{};
+  desc.componentType = kAudioUnitType_Output;
+#if TARGET_OS_IPHONE
+  desc.componentSubType = kAudioUnitSubType_RemoteIO;
+#else
+  desc.componentSubType = kAudioUnitSubType_DefaultOutput;
+#endif
+  desc.componentManufacturer = kAudioUnitManufacturer_Apple;
+  AudioComponent comp = AudioComponentFindNext(nullptr, &desc);
+  AudioUnit unit = nullptr;
+  if (!comp || AudioComponentInstanceNew(comp, &unit) != noErr) return false;
+
+  AudioStreamBasicDescription fmt{};
+  fmt.mSampleRate = 48000;
+  fmt.mFormatID = kAudioFormatLinearPCM;
+  fmt.mFormatFlags = kLinearPCMFormatFlagIsSignedInteger | kLinearPCMFormatFlagIsPacked;
+  fmt.mBytesPerPacket = 4;
+  fmt.mFramesPerPacket = 1;
+  fmt.mBytesPerFrame = 4;
+  fmt.mChannelsPerFrame = 2;
+  fmt.mBitsPerChannel = 16;
+  AURenderCallbackStruct cb{rs_coreaudio_render, this};
+  if (AudioUnitSetProperty(unit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Input, 0, &fmt,
+                           sizeof(fmt)) != noErr ||
+      AudioUnitSetProperty(unit, kAudioUnitProperty_SetRenderCallback, kAudioUnitScope_Input, 0, &cb,
+                           sizeof(cb)) != noErr ||
+      AudioUnitInitialize(unit) != noErr) {
+    AudioComponentInstanceDispose(unit);
+    return false;
+  }
+  output_rate_ = 48000;
+  resampler_.configure(core_sample_rate, output_rate_);
+  ring_.clear();
+  stream_ = unit;
+  backend_ = Backend::coreaudio;
+  AudioOutputUnitStart(unit);
+  return true;
+}
+#else
+bool AudioOutput::open_coreaudio(double) { return false; }
+#endif
+
 void AudioOutput::opensl_enqueue_next() {
 #ifdef __ANDROID__
   auto queue = static_cast<SLAndroidSimpleBufferQueueItf>(sl_queue_);
@@ -396,6 +461,16 @@ void AudioOutput::opensl_enqueue_next() {
 }
 
 void AudioOutput::close() {
+#ifdef __APPLE__
+  if (stream_) {
+    auto unit = static_cast<AudioUnit>(stream_);
+    AudioOutputUnitStop(unit);  // espera a que termine el callback en curso
+    AudioUnitUninitialize(unit);
+    AudioComponentInstanceDispose(unit);
+  }
+  stream_ = nullptr;
+  backend_ = Backend::none;
+#endif
 #ifdef _WIN32
   if (wasapi_) {
     wasapi_->stop.store(true);
@@ -429,6 +504,18 @@ void AudioOutput::close() {
 }
 
 void AudioOutput::set_paused(bool paused) {
+#ifdef __APPLE__
+  if (stream_) {
+    auto unit = static_cast<AudioUnit>(stream_);
+    if (paused) {
+      AudioOutputUnitStop(unit);
+      ring_.clear();
+    } else {
+      AudioOutputUnitStart(unit);
+    }
+  }
+  return;
+#endif
 #ifdef _WIN32
   if (wasapi_) {
     if (paused) ring_.clear();

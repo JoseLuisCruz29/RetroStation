@@ -175,7 +175,9 @@ List<Experience> experiencesFor(List<LanGame> mine, List<LanGame> theirs) {
           Experience.pspAdhoc(sha1: g.sha1, title: g.title),
   ]..sort((a, b) => a.title.toLowerCase().compareTo(b.title.toLowerCase()));
   return [
-    if (mine.any((g) => g.pokemonLink) && theirs.any((g) => g.pokemonLink)) const Experience.link(),
+    // El link de Pokémon usa gpSP, que no está en iPhone (su recompilador necesita JIT).
+    if (!isIOSDevice() && mine.any((g) => g.pokemonLink) && theirs.any((g) => g.pokemonLink))
+      const Experience.link(),
     ...shared,
   ];
 }

@@ -27,10 +27,19 @@ if(WIN32)
   set(RS_WIN_COMPAT ${CMAKE_CURRENT_SOURCE_DIR}/compat/win)
 endif()
 
+# iPhone (cmake -DCMAKE_SYSTEM_NAME=iOS): cada biblioteca .dylib se empaqueta
+# luego como .framework dentro de la app (tool/build_ios_native.sh). Primera
+# etapa: NES, SNES, GB/GBC/GBA y el cable link de GBA. iOS no deja generar
+# código en tiempo real (JIT), así que los recompiladores quedan fuera.
+if(CMAKE_SYSTEM_NAME STREQUAL "iOS")
+  set(RS_IOS ON)
+endif()
+
 # Versión del enlazador GNU para exportar solo retro_*; en Windows (lld-link)
-# los núcleos ya exportan con __declspec(dllexport) desde libretro.h.
+# los núcleos ya exportan con __declspec(dllexport) desde libretro.h, y el
+# enlazador de Apple no admite --version-script.
 function(rs_version_script target script)
-  if(NOT WIN32)
+  if(NOT WIN32 AND NOT APPLE)
     target_link_options(${target} PRIVATE -Wl,--version-script=${script})
   endif()
 endfunction()
@@ -170,11 +179,13 @@ set_target_properties(snes9x_libretro PROPERTIES PREFIX "lib" CXX_STANDARD 14)
 # Solo se exportan los símbolos retro_* (versión de enlace oficial).
 rs_version_script(snes9x_libretro ${SNES9X_DIR}/libretro/link.T)
 
-if(NOT WIN32 OR RS_WINDOWS_EXTRA_CORES)
+if(NOT RS_IOS AND (NOT WIN32 OR RS_WINDOWS_EXTRA_CORES))
   include(cores/pcsx_rearmed.cmake)
   include(cores/melonds.cmake)
 endif()
-include(cores/gpsp.cmake)
+if(NOT RS_IOS)
+  include(cores/gpsp.cmake)  # su recompilador necesita JIT
+endif()
 include(cores/gbalink.cmake)
 if(ANDROID)
   include(cores/desmume.cmake)
@@ -202,6 +213,9 @@ if(ANDROID)
 elseif(WIN32)
   # zlib (estados del multijugador): rs_zlib, definida al principio.
   target_link_libraries(retrostation_native rs_zlib ws2_32 ole32 opengl32)
+elseif(APPLE)
+  # Sonido con CoreAudio (RemoteIO); zlib viene con el sistema.
+  target_link_libraries(retrostation_native "-framework AudioToolbox" "-framework CoreFoundation" z)
 endif()
 # El núcleo se carga en tiempo de ejecución, pero debe compilarse siempre
 # junto al frontend para que se empaquete con la app.

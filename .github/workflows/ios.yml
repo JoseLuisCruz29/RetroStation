@@ -1,0 +1,61 @@
+# Versión de iPhone: la compila un Mac de GitHub (no hace falta tener Mac).
+# Resultado: RetroStation-iOS.ipa sin firmar, en "Artifacts" de cada
+# ejecución. Se instala con SideStore/AltStore/Sideloadly, que la firman con
+# tu Apple ID. No incluye juegos comerciales (solo el homebrew de bundled.json).
+name: iPhone
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'docs/**'
+      - '**.md'
+
+jobs:
+  ipa:
+    runs-on: macos-15
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      # Solo los emuladores de la versión de iPhone.
+      - name: Emuladores (submódulos)
+        run: |
+          git submodule update --init \
+            native/third_party/mgba native/third_party/fceumm native/third_party/snes9x
+
+      - name: Herramientas
+        run: brew list ninja >/dev/null 2>&1 || brew install ninja
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.50.0'
+          channel: stable
+          cache: true
+
+      - name: Motor y emuladores para iPhone
+        run: bash tool/build_ios_native.sh
+
+      - name: App (sin firmar)
+        run: |
+          flutter pub get
+          flutter build ios --release --no-codesign
+
+      - name: Empaquetar .ipa
+        run: |
+          app=build/ios/iphoneos/Runner.app
+          mkdir -p "$app/Frameworks" "$app/sfx"
+          cp -R build/ios-frameworks/*.framework "$app/Frameworks/"
+          cp android/app/src/main/res/raw/sfx_*.wav "$app/sfx/"
+          rm -rf Payload && mkdir Payload
+          cp -R "$app" Payload/
+          zip -qry RetroStation-iOS.ipa Payload
+          ls -lh RetroStation-iOS.ipa
+          ls "$app/Frameworks"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: RetroStation-iOS
+          path: RetroStation-iOS.ipa
+          retention-days: 30
