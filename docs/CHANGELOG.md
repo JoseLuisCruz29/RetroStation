@@ -1,5 +1,31 @@
 # Registro de cambios
 
+## 4.0.0 — RetroStation para iPhone y Sega Mega Drive
+Versión mayor: nueva plataforma (iOS) y nueva consola.
+
+### iPhone (iOS 15 o posterior)
+- **Compilación en la nube** con un Mac de GitHub Actions (`.github/workflows/ios.yml`). Genera el `.ipa` sin firmar; se instala con iloader o SideStore usando el Apple ID del usuario.
+- **Motor:**
+  - sonido con CoreAudio (RemoteIO);
+  - imagen como textura de Flutter (CVPixelBuffer BGRA en `AppDelegate.swift`);
+  - PSP con OpenGL ES (EAGL, `native/frontend/hw_render_ios.mm`).
+- **Emuladores:** NES, SNES, Game Boy/GBC/GBA, cable link de GBA, PlayStation, Nintendo DS, link de Pokémon (gpSP), Mega Drive y PSP. iOS no permite JIT, así que PS1, DS, gpSP y PSP usan sus intérpretes (PSP con el intérprete IR de PPSSPP).
+- Cada emulador se compila por separado; la app detecta al abrirse cuáles lleva dentro y marca el resto como «próximamente».
+- **Mandos:** Pro Controller, Xbox, PlayStation y MFi con GameController, con el mismo sistema que el PC (menús, Home para el menú del juego, Ajustes > Mando).
+- **Juegos:** se pueden pasar con la app Archivos o con «Enviar juegos» desde otro dispositivo.
+- **Limitación:** la búsqueda automática de jugadores en la red necesita un permiso especial de Apple; en iPhone se puede usar «Conectar por IP».
+
+### Sega Mega Drive / Genesis (todas las plataformas)
+- Emulador Genesis Plus GX (`native/cores/genesis_plus_gx.cmake`).
+- Formatos `.md`, `.gen` y `.smd`; al importar se comprueba la cabecera «SEGA».
+- Controles táctiles A, B y C en diagonal, como el mando original.
+- Juego compartido por la red.
+- Probado en el PC con Cave Story MD (homebrew gratuito): 60 FPS.
+
+### Repositorio y descargas
+- Código en GitHub: https://github.com/JoseLuisCruz29/RetroStation
+- Cada versión se publica en *Releases* con el instalador de Windows, el APK y el IPA, sin juegos comerciales.
+
 ## 3.7.0 — Multijugador de PSP (ad hoc)
 - **Ad hoc de PSP** en la sala: los juegos de PSP que tienen los dos (el mismo archivo) aparecen como «Ad hoc de PSP · cada uno con su PSP y su partida». Es el multijugador inalámbrico de la propia PSP, que emula PPSSPP. No usa el motor de netplay: cada dispositivo ejecuta su juego, con su mando y su partida.
   - El anfitrión enciende la Wi-Fi de la PSP y el servidor PRO Ad Hoc de PPSSPP (puertos TCP 27312 y 27313), y se conecta a sí mismo (`localhost`).

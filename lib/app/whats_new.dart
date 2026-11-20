@@ -61,7 +61,13 @@ Future<void> showWhatsNew(BuildContext context, WidgetRef ref) async {
                   'Aparece solo si tiene la sección abierta en la misma Wi-Fi. Pulsa «Conectar».'),
               point(Icons.meeting_room_rounded, '3. Sala',
                   'Quien acepta es el anfitrión: elige el juego, los dos marcáis «Listo» y a jugar.'),
-              point(Icons.cable_rounded, '¡Nuevo! Cable link de GBA',
+              point(Icons.phone_iphone_rounded, '¡Nuevo! RetroStation para iPhone',
+                  'La app llega al iPhone con sus emuladores, el multijugador y los mandos. '
+                      'Se descarga desde la página de GitHub del proyecto.'),
+              point(Icons.videogame_asset_rounded, '¡Nuevo! Sega Mega Drive / Genesis',
+                  'Juegos de Mega Drive (.md, .gen, .smd) en el PC, Android e iPhone, con '
+                      'multijugador por Wi-Fi.'),
+              point(Icons.cable_rounded, 'Cable link de GBA',
                   'Cualquier juego de GBA con cable link (Kirby, Mario Kart...), cada uno con su '
                       'GBA y su partida. Elegid el modo multijugador dentro del juego en los dos.'),
               point(Icons.send_to_mobile_rounded, '¡Nuevo! Enviar juegos',
