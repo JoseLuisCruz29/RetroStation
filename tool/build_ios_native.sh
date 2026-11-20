@@ -41,6 +41,9 @@ if cmake -S "$root/native/third_party/ppsspp" -B "$ppsspp_build" -G Ninja \
      -DCMAKE_OSX_DEPLOYMENT_TARGET=$min_ios -DCMAKE_OSX_SYSROOT=iphoneos \
      -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DLIBRETRO=ON -DUSE_DISCORD=OFF \
      -DUSE_SYSTEM_LIBPNG=OFF -DUNITTEST=OFF -DHEADLESS=OFF \
+     -DMOBILE_DEVICE=ON -DUSING_GLES2=ON "-DOPENGL_LIBRARIES=-framework OpenGLES" \
+     "-DCMAKE_C_FLAGS=-DGL_ETC1_RGB8_OES=0 -U__STRICT_ANSI__" \
+     "-DCMAKE_CXX_FLAGS=-DGL_ETC1_RGB8_OES=0 -U__STRICT_ANSI__" \
    && cmake --build "$ppsspp_build" --parallel --target ppsspp_libretro; then
   cp "$(find "$ppsspp_build" -name 'ppsspp_libretro.dylib' | head -1)" "$build/libppsspp_libretro.dylib"
 else
