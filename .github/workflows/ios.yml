@@ -14,7 +14,7 @@ on:
 
 jobs:
   ipa:
-    runs-on: macos-15
+    runs-on: macos-26
     timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
@@ -26,7 +26,13 @@ jobs:
             native/third_party/mgba native/third_party/fceumm native/third_party/snes9x
 
       - name: Herramientas
-        run: brew list ninja >/dev/null 2>&1 || brew install ninja
+        run: |
+          brew list ninja >/dev/null 2>&1 || brew install ninja
+          # El Xcode más reciente del Mac: los plugins de Flutter usan APIs de iOS 26.
+          ls -d /Applications/Xcode*.app
+          xcode=$(ls -d /Applications/Xcode_*.app | sort -V | tail -1)
+          sudo xcode-select -s "$xcode/Contents/Developer"
+          xcodebuild -version
 
       - uses: subosito/flutter-action@v2
         with:
