@@ -116,8 +116,12 @@ if(WIN32)
     PROPERTIES COMPILE_DEFINITIONS "mprotect=_mprotect")
 endif()
 
+# include/revision.h lo genera el Makefile oficial (git describe): aquí se
+# escribe con el commit del submódulo para no depender de git al compilar.
+file(WRITE ${CMAKE_BINARY_DIR}/pcsx_rev/revision.h "#define REV \"7b0e8f8f\"
+")
 add_library(pcsx_rearmed_libretro SHARED ${PCSX_SRC})
-target_include_directories(pcsx_rearmed_libretro PRIVATE ${PCSX_INC})
+target_include_directories(pcsx_rearmed_libretro PRIVATE ${CMAKE_BINARY_DIR}/pcsx_rev ${PCSX_INC})
 target_compile_definitions(pcsx_rearmed_libretro PRIVATE ${PCSX_DEFS})
 target_compile_options(pcsx_rearmed_libretro PRIVATE
   $<$<COMPILE_LANGUAGE:C>:-ffast-math -fwrapv -w>)

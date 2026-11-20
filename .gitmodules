@@ -22,3 +22,6 @@
 [submodule "native/third_party/snes9x"]
 	path = native/third_party/snes9x
 	url = https://github.com/libretro/snes9x.git
+[submodule "native/third_party/genesis_plus_gx"]
+	path = native/third_party/genesis_plus_gx
+	url = https://github.com/libretro/Genesis-Plus-GX.git

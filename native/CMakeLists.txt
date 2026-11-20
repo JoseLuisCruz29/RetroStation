@@ -217,9 +217,11 @@ elseif(APPLE)
 endif()
 # El núcleo se carga en tiempo de ejecución, pero debe compilarse siempre
 # junto al frontend para que se empaquete con la app.
+# (En iPhone no: cada núcleo se compila por separado y uno que falle no debe
+# impedir compilar el motor; ver tool/build_ios_native.sh.)
 foreach(core mgba_libretro fceumm_libretro snes9x_libretro pcsx_rearmed_libretro
              melonds_libretro gpsp_libretro desmume2015_libretro gbalink_libretro)
-  if(TARGET ${core})
+  if(TARGET ${core} AND NOT RS_IOS)
     add_dependencies(retrostation_native ${core})
   endif()
 endforeach()
