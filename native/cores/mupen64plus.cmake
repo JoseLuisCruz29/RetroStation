@@ -97,6 +97,8 @@ if(APPLE)
   # libpng busca <fp.h> (Mac clásico) si TARGET_OS_MAC está definido; con
   # <math.h> ya incluido usa el estándar.
   target_compile_options(mupen64plus_next_libretro PRIVATE "SHELL:-include math.h")
+  # Por lo mismo, zlib sustituye fdopen() por NULL salvo que ya sea una macro.
+  target_compile_definitions(mupen64plus_next_libretro PRIVATE fdopen=fdopen)
 endif()
 if(WIN32)
   target_include_directories(mupen64plus_next_libretro PRIVATE ${RS_WIN_COMPAT})
