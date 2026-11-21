@@ -62,7 +62,7 @@ elseif(ANDROID)
        ${M64}/libretro-common/glsym/glsym_es3.c
        ${M64}/GLideN64/src/Graphics/OpenGLContext/GraphicBuffer/GraphicBufferWrapper.cpp
        ${M64}/GLideN64/src/Graphics/OpenGLContext/GraphicBuffer/PublicApi/android_hardware_buffer_compat.cpp)
-  list(APPEND M64_DEFS OS_ANDROID ANDROID EGL_EGLEXT_PROTOTYPES HAVE_POSIX_MEMALIGN=1
+  list(APPEND M64_DEFS OS_ANDROID ANDROID EGL_EGLEXT_PROTOTYPES HAVE_POSIX_MEMALIGN=1 NO_ASM
        EGL HAVE_OPENGLES HAVE_OPENGLES3 GLES3)
 elseif(RS_IOS)
   list(APPEND M64_SRC ${M64}/GLideN64/src/osal/osal_files_unix.c
@@ -72,7 +72,7 @@ elseif(RS_IOS)
 else()
   list(APPEND M64_SRC ${M64}/GLideN64/src/osal/osal_files_unix.c
        ${M64}/libretro-common/glsym/glsym_gl.c)
-  list(APPEND M64_DEFS OS_LINUX HAVE_OPENGL CORE)
+  list(APPEND M64_DEFS OS_LINUX HAVE_OPENGL CORE NO_ASM)
 endif()
 
 # El núcleo guarda el hilo de libretro (retro_thread) solo al cargar el juego y
@@ -93,6 +93,11 @@ target_compile_options(mupen64plus_next_libretro PRIVATE -w -O2 -fsigned-char -f
   -fno-strict-aliasing -fcommon
   $<$<COMPILE_LANGUAGE:C>:-std=gnu11>)
 set_target_properties(mupen64plus_next_libretro PROPERTIES PREFIX "lib" CXX_STANDARD 17)
+if(APPLE)
+  # libpng busca <fp.h> (Mac clásico) si TARGET_OS_MAC está definido; con
+  # <math.h> ya incluido usa el estándar.
+  target_compile_options(mupen64plus_next_libretro PRIVATE "SHELL:-include math.h")
+endif()
 if(WIN32)
   target_include_directories(mupen64plus_next_libretro PRIVATE ${RS_WIN_COMPAT})
   target_link_libraries(mupen64plus_next_libretro opengl32)
