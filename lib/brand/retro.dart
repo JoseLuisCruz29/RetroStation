@@ -330,6 +330,21 @@ class _ConsoleArtPainter extends CustomPainter {
       (16, 6, 32, 18, 0xFFD0D3D8), (20, 8, 24, 14, 0xFF202020), (22, 10, 20, 10, 0xFF7FB6E8),
       (16, 26, 32, 18, 0xFFC4C7CC), (22, 28, 20, 12, 0xFF202020), (24, 30, 16, 8, 0xFFE8E8B0),
     ],
+    // Consola negra con la ranura arriba y el círculo central; mando de 3 botones.
+    'genesis': [
+      (8, 18, 38, 18, 0xFF30303A), (18, 15, 16, 4, 0xFF18181D), (16, 21, 20, 12, 0xFF44444F),
+      (20, 23, 12, 8, 0xFF62626F), (40, 30, 3, 2, 0xFFDD3333), (10, 32, 6, 2, 0xFF55555F),
+      (42, 6, 18, 10, 0xFF30303A), (44, 9, 4, 4, 0xFF6E6E7A), (51, 11, 2, 2, 0xFFBBBBC4),
+      (54, 10, 2, 2, 0xFFBBBBC4), (57, 9, 2, 2, 0xFFBBBBC4),
+    ],
+    // Consola gris oscura con cartucho; mando de tres brazos con A, B y C.
+    'n64': [
+      (8, 22, 38, 14, 0xFF3A3A42), (13, 18, 28, 6, 0xFF46464F), (20, 13, 14, 7, 0xFF2A2A30),
+      (22, 14, 10, 3, 0xFF6B6B78), (14, 30, 5, 2, 0xFF8A8A94), (35, 30, 5, 2, 0xFF8A8A94),
+      (42, 6, 18, 7, 0xFF55555F), (42, 13, 4, 5, 0xFF55555F), (49, 13, 4, 6, 0xFF55555F),
+      (56, 13, 4, 5, 0xFF55555F), (50, 14, 2, 2, 0xFF1E1E22), (44, 8, 3, 3, 0xFF1E1E22),
+      (54, 9, 2, 2, 0xFF22C55E), (56, 7, 2, 2, 0xFF3B82F6), (58, 10, 2, 2, 0xFFFACC15),
+    ],
     'psp': [
       (6, 16, 52, 18, 0xFF1F1F24), (18, 18, 28, 14, 0xFF000000), (20, 20, 24, 10, 0xFF3A7BD5),
       (10, 22, 4, 4, 0xFF666666), (50, 21, 2, 2, 0xFFCCCCCC), (52, 24, 2, 2, 0xFFCCCCCC),
