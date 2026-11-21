@@ -93,7 +93,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
     final game = _game;
     if (session == null || game == null || !mounted) return;
     final settings = ref.read(settingsProvider);
-    final analog = game.consoleId == 'psp';
+    final analog = game.consoleId == 'psp' || game.consoleId == 'n64';
     final read = Gamepads.instance.read(
       GamepadBindings.resolve(settings.gamepad, Gamepads.instance.connected.firstOrNull),
       analogStick: analog,
@@ -109,6 +109,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
     _padMenuHeld = read.menu;
     session.setPadMask(_menuOpen ? 0 : read.mask);
     if (analog) session.setAnalog(_menuOpen ? Offset.zero : read.stick);
+    if (game.consoleId == 'n64') session.setRightAnalog(_menuOpen ? Offset.zero : read.rightStick);
   }
 
   Map<LogicalKeyboardKey, int> _currentKeyMap() {

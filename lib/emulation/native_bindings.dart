@@ -90,6 +90,15 @@ abstract final class RetroButton {
   static const right = 7;
   static const a = 8;
   static const x = 9;
+  static const l2 = 12;
+  static const r2 = 13;
+
+  /// Botones C de la N64 (bits propios de la app, no de libretro): la sesión
+  /// los convierte en el joystick derecho, que es como los lee el núcleo.
+  static const cUp = 16;
+  static const cDown = 17;
+  static const cLeft = 18;
+  static const cRight = 19;
   static const l = 10;
   static const r = 11;
 }

@@ -47,6 +47,9 @@ class PadState {
 
   Offset get leftStick => Offset(axes.isNotEmpty ? axes[0] : 0, axes.length > 1 ? axes[1] : 0);
 
+  /// Joystick derecho (ejes r y u, como en la API de Windows). Botones C de N64.
+  Offset get rightStick => Offset(axes.length > 3 ? axes[3] : 0, axes.length > 4 ? axes[4] : 0);
+
   /// Entradas pulsadas: "b0".."b31" (botones) y "up"/"down"/"left"/"right" (cruceta).
   Set<String> get pressed => {
         for (var i = 0; i < 32; i++)
@@ -123,10 +126,12 @@ class Gamepads extends ChangeNotifier {
   }
 
   /// Botones de consola pulsados en todos los mandos (para el juego).
-  ({int mask, bool menu, Offset stick}) read(Map<String, int> bindings, {required bool analogStick}) {
+  ({int mask, bool menu, Offset stick, Offset rightStick}) read(Map<String, int> bindings,
+      {required bool analogStick}) {
     var mask = 0;
     var menu = false;
     var stick = Offset.zero;
+    var right = Offset.zero;
     for (final pad in _pads.values) {
       for (final input in pad.pressed) {
         final action = bindings[input];
@@ -137,6 +142,8 @@ class Gamepads extends ChangeNotifier {
           mask |= 1 << action;
         }
       }
+      final rs = pad.rightStick;
+      if (rs.distance > 0.25) right = rs;
       final s = pad.leftStick;
       if (analogStick) {
         if (s.distance > 0.15) stick = s;
@@ -148,7 +155,7 @@ class Gamepads extends ChangeNotifier {
         if (s.dx > 0.5) mask |= 1 << RetroButton.right;
       }
     }
-    return (mask: mask, menu: menu, stick: stick);
+    return (mask: mask, menu: menu, stick: stick, rightStick: right);
   }
 }
 
@@ -164,6 +171,8 @@ abstract final class GamepadBindings {
     (RetroButton.y, 'Y'),
     (RetroButton.l, 'L'),
     (RetroButton.r, 'R'),
+    (RetroButton.l2, 'ZL / L2 (Z en N64)'),
+    (RetroButton.r2, 'ZR / R2'),
     (RetroButton.start, 'Start'),
     (RetroButton.select, 'Select'),
     (menu, 'Menú del juego'),
@@ -184,8 +193,10 @@ abstract final class GamepadBindings {
     RetroButton.a: ['b1'],
     RetroButton.y: ['b2'],
     RetroButton.x: ['b3'],
-    RetroButton.l: ['b4', 'b6'], // L y ZL
-    RetroButton.r: ['b5', 'b7'], // R y ZR
+    RetroButton.l: ['b4'],
+    RetroButton.r: ['b5'],
+    RetroButton.l2: ['b6'], // ZL (Z en N64, L2 en PlayStation)
+    RetroButton.r2: ['b7'], // ZR
     RetroButton.select: ['b8'],
     RetroButton.start: ['b9'],
     menu: ['b12'], // Home

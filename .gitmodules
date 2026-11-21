@@ -25,3 +25,6 @@
 [submodule "native/third_party/genesis_plus_gx"]
 	path = native/third_party/genesis_plus_gx
 	url = https://github.com/libretro/Genesis-Plus-GX.git
+[submodule "native/third_party/mupen64plus"]
+	path = native/third_party/mupen64plus
+	url = https://github.com/libretro/mupen64plus-libretro-nx.git

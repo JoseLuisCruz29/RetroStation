@@ -92,6 +92,7 @@ flutter:
     - native/third_party/ppsspp/LICENSE.TXT
     - native/third_party/gpsp/COPYING
     - native/third_party/genesis_plus_gx/LICENSE.txt
+    - native/third_party/mupen64plus/LICENSE
     # Juegos incluidos: todo lo de esta carpeta se instala en el primer arranque.
     - assets/bundled/
     # Logo del autor e iconos (generados con tool/make_brand_assets.py).

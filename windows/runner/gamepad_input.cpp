@@ -87,6 +87,8 @@ bool GamepadInput::ReadHid(int slot, Pad& pad) {
   s.pov = pad.pov;
   s.lx = pad.axes[0];
   s.ly = pad.axes[1];
+  s.rx = pad.axes[3];
+  s.ry = pad.axes[4];
   const NintendoState before = s;
   if (!dev->Poll(s)) {
     dev.reset();
@@ -95,7 +97,7 @@ bool GamepadInput::ReadHid(int slot, Pad& pad) {
   if (!(s == before)) {
     pad.buttons = s.buttons;
     pad.pov = s.pov;
-    pad.axes = {s.lx, s.ly, 0, 0, 0, 0};
+    pad.axes = {s.lx, s.ly, 0, s.rx, s.ry, 0};
     pad.dirty = true;
   }
   return true;

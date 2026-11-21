@@ -14,16 +14,16 @@ void main() {
   });
 
   test('cambiar una tecla; si ya estaba usada, se intercambian', () {
-    // A pasa a la K.
-    var custom = KeyboardBindings.assign(const {}, RetroButton.a, LogicalKeyboardKey.keyK);
+    // A pasa a la G.
+    var custom = KeyboardBindings.assign(const {}, RetroButton.a, LogicalKeyboardKey.keyG);
     var map = KeyboardBindings.keyMap(custom);
-    expect(map[LogicalKeyboardKey.keyK], RetroButton.a);
+    expect(map[LogicalKeyboardKey.keyG], RetroButton.a);
     expect(map.containsKey(LogicalKeyboardKey.keyX), isFalse);
 
-    // B pasa a la K (que tenía A): A se queda con la Z de B.
-    custom = KeyboardBindings.assign(custom, RetroButton.b, LogicalKeyboardKey.keyK);
+    // B pasa a la G (que tenía A): A se queda con la Z de B.
+    custom = KeyboardBindings.assign(custom, RetroButton.b, LogicalKeyboardKey.keyG);
     map = KeyboardBindings.keyMap(custom);
-    expect(map[LogicalKeyboardKey.keyK], RetroButton.b);
+    expect(map[LogicalKeyboardKey.keyG], RetroButton.b);
     expect(map[LogicalKeyboardKey.keyZ], RetroButton.a);
     final keys = KeyboardBindings.resolve(custom).values.toList();
     expect(keys.toSet().length, keys.length, reason: 'ninguna tecla repetida');

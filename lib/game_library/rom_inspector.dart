@@ -115,6 +115,22 @@ abstract final class RomInspector {
           sha1: sha1.convert(bytes).toString(),
           size: size,
         );
+      case 'n64':
+        if (size < 0x1000) return RejectedRom(path, 'Archivo demasiado pequeño');
+        if (size > 64 * 1024 * 1024) return RejectedRom(path, 'Mayor de 64 MB');
+        final bytes = file.readAsBytesSync();
+        final magic = bytes.sublist(0, 4).map((b) => b.toRadixString(16).padLeft(2, '0')).join();
+        // .z64 (80371240), .v64 (37804012) y .n64 (40123780).
+        if (!const {'80371240', '37804012', '40123780'}.contains(magic)) {
+          return RejectedRom(path, 'No parece un juego de Nintendo 64 (cabecera desconocida)');
+        }
+        return ValidRom(
+          path,
+          consoleId: 'n64',
+          title: titleFromFileName(path) ?? 'Sin título',
+          sha1: sha1.convert(bytes).toString(),
+          size: size,
+        );
       case 'psx':
         return _inspectPsx(path, file, size, ext.toLowerCase());
       case 'nds':

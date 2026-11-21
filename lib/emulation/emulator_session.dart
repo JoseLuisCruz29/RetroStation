@@ -171,7 +171,28 @@ class EmulatorSession {
     _send();
   }
 
-  void _send() => RetroNative.instance.setButtons(_buttons | _touchMask | _padMask);
+  void _send() {
+    final all = _buttons | _touchMask | _padMask;
+    RetroNative.instance.setButtons(all & 0xFFFF);
+    // Botones C de la N64 -> joystick derecho (solo si cambian).
+    final c = all >> 16;
+    if (c != _cButtons) {
+      _cButtons = c;
+      bool on(int b) => all & (1 << b) != 0;
+      final x = on(RetroButton.cRight) ? 32767 : (on(RetroButton.cLeft) ? -32767 : 0);
+      final y = on(RetroButton.cDown) ? 32767 : (on(RetroButton.cUp) ? -32767 : 0);
+      RetroNative.instance.setAnalog(1, x, y);
+    }
+  }
+
+  int _cButtons = 0;
+
+  /// Joystick derecho de un mando (botones C en N64): -1..1, y hacia abajo.
+  void setRightAnalog(Offset v) => RetroNative.instance.setAnalog(
+        1,
+        (v.dx.clamp(-1.0, 1.0) * 32767).round(),
+        (v.dy.clamp(-1.0, 1.0) * 32767).round(),
+      );
 
   bool get supportsStates => RetroNative.instance.supportsStates;
   void saveState(String path) => RetroNative.instance.saveState(path);

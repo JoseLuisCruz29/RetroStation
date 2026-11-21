@@ -109,6 +109,7 @@ abstract final class TouchLayout {
       'psx' => _snesFaceButtons(base, labels: psxLabels),
       'psp' => _psp(_snesFaceButtons(base, labels: psxLabels), area, landscape: landscape),
       'genesis' => _genesisFaceButtons(base),
+      'n64' => _n64(base, area, landscape: landscape),
       _ => base,
     };
   }
@@ -194,6 +195,39 @@ abstract final class TouchLayout {
       _face('y', RetroButton.y, 'A', center + Offset(-step, step * 0.3), d),
       _face('b', RetroButton.b, 'B', center, d),
       _face('a', RetroButton.a, 'C', center + Offset(step, -step * 0.3), d),
+    ];
+  }
+
+  /// Nintendo 64: joystick en el sitio de la cruceta (que sube), A y B
+  /// grandes, los cuatro C en rombo, Z bajo la L y START en el centro.
+  static List<ControlRegion> _n64(List<ControlRegion> base, Size area, {required bool landscape}) {
+    final dpad = base.firstWhere((r) => r.id == 'dpad');
+    final a = base.firstWhere((r) => r.id == 'a');
+    final b = base.firstWhere((r) => r.id == 'b');
+    final l = base.firstWhere((r) => r.id == 'l');
+    final s = dpad.size.width;
+    final d = a.size.width * 0.62;
+    final cCenter = Offset(a.center.dx - d * 0.4, a.center.dy - d * 2.0);
+    final r = d * 0.95;
+    return [
+      for (final region in base)
+        if (!const {'dpad', 'select', 'a', 'b'}.contains(region.id)) region,
+      ControlRegion(id: 'stick', shape: ControlShape.stick, center: dpad.center, size: Size(s, s)),
+      dpad.moved(dpad.center + Offset(0, s * 0.85), dpad.size * 0.55),
+      _face('a', RetroButton.b, 'A', a.center, a.size.width),
+      _face('b', RetroButton.y, 'B', b.center, b.size.width),
+      _face('cu', RetroButton.cUp, 'C▲', cCenter + Offset(0, -r), d),
+      _face('cd', RetroButton.cDown, 'C▼', cCenter + Offset(0, r), d),
+      _face('cl', RetroButton.cLeft, 'C◀', cCenter + Offset(-r, 0), d),
+      _face('cr', RetroButton.cRight, 'C▶', cCenter + Offset(r, 0), d),
+      ControlRegion(
+        id: 'z',
+        shape: ControlShape.pill,
+        center: l.center + Offset(0, l.size.height * 1.6),
+        size: l.size,
+        button: RetroButton.l2,
+        label: 'Z',
+      ),
     ];
   }
 

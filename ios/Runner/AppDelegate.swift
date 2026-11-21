@@ -250,6 +250,7 @@ final class GamepadBridge {
     default: pov = -1
     }
     let stick = g.leftThumbstick
+    let rstick = g.rightThumbstick
     channel.invokeMethod("state", arguments: [
       "id": id,
       "connected": true,
@@ -260,7 +261,8 @@ final class GamepadBridge {
       "buttons": mask,
       "pov": pov,
       // GameController: arriba es positivo; en libretro, abajo.
-      "axes": [Double(stick.xAxis.value), Double(-stick.yAxis.value), 0.0, 0.0, 0.0, 0.0],
+      "axes": [Double(stick.xAxis.value), Double(-stick.yAxis.value), 0.0,
+               Double(rstick.xAxis.value), Double(-rstick.yAxis.value), 0.0],
     ])
   }
 }

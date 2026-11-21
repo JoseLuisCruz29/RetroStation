@@ -32,8 +32,9 @@ void main() {
     expect(ConsoleRegistry.byId('psx')!.coreLibrary, 'libpcsx_rearmed_libretro.so');
     expect(ConsoleRegistry.byId('nds')!.coreLibrary, 'libmelonds_libretro.so');
     expect(ConsoleRegistry.byId('genesis')!.coreLibrary, 'libgenesis_plus_gx_libretro.so');
-    // GBA, GB, GBC, NES, SNES, Mega Drive, PS1, NDS y PSP.
-    expect(ConsoleRegistry.availableCount, 9);
+    expect(ConsoleRegistry.byId('n64')!.coreLibrary, 'libmupen64plus_next_libretro.so');
+    // GBA, GB, GBC, NES, SNES, Mega Drive, N64, PS1, NDS y PSP.
+    expect(ConsoleRegistry.availableCount, 10);
   });
 
   test('toda consola disponible declara su biblioteca nativa', () {

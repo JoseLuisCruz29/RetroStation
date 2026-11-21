@@ -26,8 +26,10 @@ struct NintendoState {
   uint32_t buttons = 0;
   int pov = -1;  // centésimas de grado, -1 = suelta
   double lx = 0, ly = 0;  // -1..1, y hacia abajo
+  double rx = 0, ry = 0;  // joystick derecho
   bool operator==(const NintendoState& o) const {
-    return buttons == o.buttons && pov == o.pov && std::abs(lx - o.lx) < 0.02 && std::abs(ly - o.ly) < 0.02;
+    return buttons == o.buttons && pov == o.pov && std::abs(lx - o.lx) < 0.02 &&
+           std::abs(ly - o.ly) < 0.02 && std::abs(rx - o.rx) < 0.02 && std::abs(ry - o.ry) < 0.02;
   }
 };
 
@@ -177,6 +179,10 @@ class NintendoHid {
       const int y = (r[7] >> 4) | (r[8] << 4);
       s.lx = Axis12(x);
       s.ly = -Axis12(y);  // en el mando, arriba es más
+      const int rxv = r[9] | ((r[10] & 0x0F) << 8);
+      const int ryv = (r[10] >> 4) | (r[11] << 4);
+      s.rx = Axis12(rxv);
+      s.ry = -Axis12(ryv);
     } else if (n >= 12 && r[0] == 0x3F) {
       s.buttons = r[1] | (r[2] << 8);
       const int hat = r[3];
@@ -184,6 +190,10 @@ class NintendoHid {
       s.pov = hat < 8 ? kHat[hat] : -1;
       s.lx = Axis16(r[4] | (r[5] << 8));
       s.ly = Axis16(r[6] | (r[7] << 8));
+      if (n >= 12) {
+        s.rx = Axis16(r[8] | (r[9] << 8));
+        s.ry = Axis16(r[10] | (r[11] << 8));
+      }
     }
   }
 

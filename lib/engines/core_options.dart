@@ -123,6 +123,15 @@ abstract final class CoreOptions {
             // No esperar a la GPU para leer imágenes: gran ahorro en móviles.
             'ppsspp_skip_gpu_readbacks': 'enabled',
           },
+        // Mupen64Plus-Next: GLideN64 por GPU, RSP en HLE y sin el renderizador
+        // en otro hilo (el motor ya ejecuta el núcleo en su propio hilo).
+        ('n64', _) => const {
+            'mupen64plus-rdp-plugin': 'gliden64',
+            'mupen64plus-rsp-plugin': 'hle',
+            'mupen64plus-cpucore': 'cached_interpreter',
+            'mupen64plus-ThreadedRenderer': 'False',
+            'mupen64plus-43screensize': '640x480',
+          },
         // melonDS: pantalla táctil por "pointer" (por defecto viene desactivada)
         // y las dos pantallas una encima de otra.
         ('nds', _) => const {

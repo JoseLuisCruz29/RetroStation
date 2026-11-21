@@ -31,6 +31,12 @@ abstract final class KeyboardBindings {
     BindableButton(RetroButton.r, 'R'),
     BindableButton(RetroButton.start, 'Start'),
     BindableButton(RetroButton.select, 'Select'),
+    BindableButton(RetroButton.l2, 'L2 / Z', 'Nintendo 64: Z · PlayStation: L2'),
+    BindableButton(RetroButton.r2, 'R2', 'PlayStation: R2'),
+    BindableButton(RetroButton.cUp, 'C arriba', 'Nintendo 64'),
+    BindableButton(RetroButton.cDown, 'C abajo', 'Nintendo 64'),
+    BindableButton(RetroButton.cLeft, 'C izquierda', 'Nintendo 64'),
+    BindableButton(RetroButton.cRight, 'C derecha', 'Nintendo 64'),
   ];
 
   /// Teclas de fábrica: botón -> tecla.
@@ -47,6 +53,12 @@ abstract final class KeyboardBindings {
     RetroButton.r: LogicalKeyboardKey.keyS,
     RetroButton.start: LogicalKeyboardKey.enter,
     RetroButton.select: LogicalKeyboardKey.backspace,
+    RetroButton.l2: LogicalKeyboardKey.keyQ,
+    RetroButton.r2: LogicalKeyboardKey.keyW,
+    RetroButton.cUp: LogicalKeyboardKey.keyI,
+    RetroButton.cDown: LogicalKeyboardKey.keyK,
+    RetroButton.cLeft: LogicalKeyboardKey.keyJ,
+    RetroButton.cRight: LogicalKeyboardKey.keyL,
   };
 
   /// Mandos físicos: siempre activos, no se configuran aquí.

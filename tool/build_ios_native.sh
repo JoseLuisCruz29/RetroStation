@@ -27,7 +27,7 @@ cmake -S "$root/native" -B "$build" -G Ninja \
 # como "próximamente" (Dart comprueba qué frameworks hay dentro de la app).
 cmake --build "$build" --parallel --target \
   retrostation_native mgba_libretro fceumm_libretro snes9x_libretro gbalink_libretro
-for target in genesis_plus_gx_libretro pcsx_rearmed_libretro melonds_libretro gpsp_libretro; do
+for target in genesis_plus_gx_libretro mupen64plus_next_libretro pcsx_rearmed_libretro melonds_libretro gpsp_libretro; do
   if ! cmake --build "$build" --parallel --target "$target"; then
     echo "::warning::$target no compiló para iPhone (su consola quedará como próximamente)"
   fi
