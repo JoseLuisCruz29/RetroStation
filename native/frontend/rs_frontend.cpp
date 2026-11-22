@@ -339,6 +339,16 @@ void convert_row(const void* src, uint32_t* dst, unsigned width) {
 }
 
 void video_refresh_cb(const void* data, unsigned width, unsigned height, size_t pitch) {
+  // Diagnóstico: las primeras imágenes de cada juego (¿el núcleo dibuja?).
+  static uint64_t logged_session = UINT64_MAX;
+  static int logged = 0;
+  const uint64_t session = g.frame_count.load();
+  if (session < 3 && logged < 3 && logged_session != session) {
+    logged_session = session;
+    ++logged;
+    RS_LOG(RS_INFO, "Imagen %llu: %ux%u %s", static_cast<unsigned long long>(session), width, height,
+           data == RETRO_HW_FRAME_BUFFER_VALID ? "(GPU)" : data ? "" : "(repetida)");
+  }
   if (data == RETRO_HW_FRAME_BUFFER_VALID) {
     // El núcleo ya dibujó en el FBO: se presenta en este mismo hilo, que es
     // el dueño del contexto OpenGL.
@@ -708,6 +718,8 @@ void emulation_loop() {
   // cierra la app (PPSSPP). Se espera sin ejecutar hasta que se salga.
   const bool hw_failed =
       hw && !rs::hw::start(g.av.geometry.max_width, g.av.geometry.max_height);
+  RS_LOG(RS_INFO, "Bucle de emulación: %.3f fps, GPU %s", target_fps,
+         hw ? (hw_failed ? "falló" : "lista") : "no");
   if (hw_failed) {
     set_error("No se pudo iniciar OpenGL ES para este núcleo");
   }
@@ -791,7 +803,13 @@ void emulation_loop() {
         // Las pulsaciones retenidas antes de este fotograma ya se han visto.
         uint32_t seen = g.latched.load(std::memory_order_relaxed);
         rs::net::packet_frame();  // link de GBA: paquetes recibidos y conexiones
+        const auto run_start = Clock::now();
         g.core.run();
+        if (g.frame_count.load() < 3) {
+          RS_LOG(RS_INFO, "Fotograma %llu: retro_run %.1f ms",
+                 static_cast<unsigned long long>(g.frame_count.load()),
+                 std::chrono::duration<double, std::milli>(Clock::now() - run_start).count());
+        }
         g.latched.fetch_and(~seen, std::memory_order_relaxed);
         uint64_t frames = g.frame_count.fetch_add(1) + 1;
         if (frames % kAutosaveFrames == 0) save_sram_locked();
@@ -832,8 +850,11 @@ void emulation_loop() {
     }
     std::this_thread::sleep_until(next);
   }
+  RS_LOG(RS_INFO, "Bucle de emulación terminado (%llu fotogramas)",
+         static_cast<unsigned long long>(g.frame_count.load()));
   run_pending_tasks();  // nadie se queda esperando una tarea al salir
   if (hw) rs::hw::stop();
+  RS_LOG(RS_INFO, "GPU liberada");
 }
 
 bool write_state_file(const std::string& path) {
@@ -998,6 +1019,18 @@ RS_API int32_t rs_load(const char* core_path, const char* rom_path, const char* 
   g.core.get_system_info(&pre);
   g.rom.clear();
   g.rom.shrink_to_fit();
+  // Los que leen el juego por su cuenta (PPSSPP) no siempre comprueban que
+  // exista: sin el archivo, PPSSPP arrancaba sin CPU y cerraba la app.
+  if (pre.need_fullpath) {
+    FILE* probe = fopen(rom_path, "rb");
+    if (!probe) {
+      set_error("No se encontró el juego %s", rom_path);
+      rs::platform::lib_close(g.core.handle);
+      g.core = CoreApi{};
+      return RS_ERR_ROM_READ;
+    }
+    fclose(probe);
+  }
   if (!pre.need_fullpath && !read_file(rom_path, g.rom)) {
     set_error("No se pudo leer el ROM %s", rom_path);
     rs::platform::lib_close(g.core.handle);

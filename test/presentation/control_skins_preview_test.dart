@@ -9,7 +9,7 @@ import 'package:retrostation/presentation/player/touch_controls.dart';
 import 'package:retrostation/settings/app_settings.dart';
 
 /// Todos los diseños de botones se dibujan sin errores en todas las consolas
-/// (con un botón pulsado y el joystick movido). Con RS_PREVIEW=<ruta.png>
+/// (con un botón pulsado y el joystick movido). Con `RS_PREVIEW=ruta.png`
 /// guarda una imagen con todos para revisarlos a ojo.
 void main() {
   const consoles = ['gba', 'nes', 'snes', 'psx', 'psp', 'genesis', 'n64', 'nds'];

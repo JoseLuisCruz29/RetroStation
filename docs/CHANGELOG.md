@@ -5,7 +5,8 @@
 - **Diseños de los controles táctiles** (Ajustes > Controles táctiles > Diseño de los botones): Clásico (el de siempre, por defecto), Consola (botones de colores con relieve, según el mando de cada sistema), Minimalista, Neón, Pixel y Cristal. Valen para todas las consolas y también se ven en el editor de controles. Cada uno se muestra con una vista previa.
 
 ### Correcciones
-- **iPhone: la app se cerraba al abrir un juego de PSP.** El hilo de emulación tenía la pila de 512 KB que iOS da por defecto a los hilos secundarios (en Android y Windows, 1 MB o más); PPSSPP arranca el juego y compila los shaders de OpenGL ES en ese hilo. Ahora se crea con 16 MB. Además, si un núcleo con GPU no consigue su contexto de OpenGL ES, ya no se ejecuta (antes cerraba la app).
+- **iPhone: los juegos dejaban de abrirse tras actualizar la app (PSP cerraba la app).** iOS cambia el nombre de la carpeta de la app (`.../Application/<UUID>/`) con cada instalación, y la biblioteca guardaba la ruta completa de cada juego, portada y save state. Ahora, al abrirse, la app corrige las rutas que apuntan a una instalación anterior. Además, el motor comprueba que el juego exista antes de dárselo a los núcleos que lo leen por su cuenta: PPSSPP arrancaba sin juego y se cerraba (diagnosticado con los informes de cierre del iPhone).
+- **iPhone:** el hilo de emulación se crea con 16 MB de pila (iOS da 512 KB a los hilos secundarios) y, si un núcleo con GPU no obtiene su contexto, ya no se ejecuta.
 - **iPhone: registro de diagnóstico** en Archivos > RetroStation > Registro (`registro.txt` y `registro-anterior.txt`, el de la sesión anterior).
 - **Ajustes > Fondo:** «Negro AMOLED» no cambiaba nada porque el fondo animado de circuitos siempre se pintaba en gris carbón. Ahora usa negro puro con pistas más tenues.
 

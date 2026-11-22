@@ -19,6 +19,7 @@ import 'metadata/metadata_service.dart';
 import 'settings/app_settings.dart';
 import 'storage/app_paths.dart';
 import 'storage/database.dart';
+import 'storage/path_relocation.dart';
 import 'storage/storage_providers.dart';
 
 Future<void> main() async {
@@ -71,6 +72,9 @@ Future<void> main() async {
 
   final paths = await AppPaths.init();
   final db = AppDatabase.openDefault();
+  // iPhone: cada instalación nueva cambia la carpeta de la app; se corrigen
+  // las rutas guardadas para que los juegos se sigan abriendo.
+  await relocateStoredPaths(db, paths);
   final settings = await SettingsRepository(db).load();
 
   // Gestor de descargas: notificaciones de progreso y recuperación de tareas
