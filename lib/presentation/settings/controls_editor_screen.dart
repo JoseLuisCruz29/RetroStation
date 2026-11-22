@@ -131,6 +131,8 @@ class _ControlsEditorScreenState extends ConsumerState<ControlsEditorScreen> {
                     landscape: _landscape,
                     selectedId: _selected,
                     opacity: settings.controlsOpacity,
+                    skin: settings.controlSkin,
+                    consoleId: _console,
                     onSelect: (id) => setState(() => _selected = id),
                     onDrag: (id, delta) => _update(
                       id,
@@ -197,6 +199,8 @@ class _EditableArea extends StatefulWidget {
     required this.landscape,
     required this.selectedId,
     required this.opacity,
+    required this.skin,
+    required this.consoleId,
     required this.onSelect,
     required this.onDrag,
   });
@@ -205,6 +209,8 @@ class _EditableArea extends StatefulWidget {
   final bool landscape;
   final String? selectedId;
   final double opacity;
+  final ControlSkin skin;
+  final String consoleId;
   final ValueChanged<String?> onSelect;
   final void Function(String id, Offset delta) onDrag;
 
@@ -259,6 +265,8 @@ class _EditableAreaState extends State<_EditableArea> {
                 opacity: widget.opacity,
                 accent: theme.colorScheme.primary,
                 selectedId: widget.selectedId,
+                skin: widget.skin,
+                consoleId: widget.consoleId,
               ),
             ),
           ),

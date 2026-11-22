@@ -12,6 +12,9 @@
 
 #include <algorithm>
 #include <atomic>
+#if defined(__APPLE__)
+#include <pthread.h>
+#endif
 #include <chrono>
 #include <condition_variable>
 #include <cstdarg>
@@ -701,11 +704,20 @@ void emulation_loop() {
   // Núcleos con GPU: el contexto se crea en este hilo, que es el que llama a
   // retro_run (lo exige libretro).
   const bool hw = rs::hw::active();
-  if (hw && !rs::hw::start(g.av.geometry.max_width, g.av.geometry.max_height)) {
-    RS_LOG(RS_ERROR, "No se pudo iniciar OpenGL ES para este núcleo");
+  // Sin contexto de GPU el núcleo no puede dibujar: llamar a retro_run así
+  // cierra la app (PPSSPP). Se espera sin ejecutar hasta que se salga.
+  const bool hw_failed =
+      hw && !rs::hw::start(g.av.geometry.max_width, g.av.geometry.max_height);
+  if (hw_failed) {
+    set_error("No se pudo iniciar OpenGL ES para este núcleo");
   }
 
   while (g.running.load()) {
+    if (hw_failed) {
+      run_pending_tasks();
+      std::this_thread::sleep_for(std::chrono::milliseconds(50));
+      continue;
+    }
     if (g.paused.load()) {
       g.fps.store(0.0);
       if (hw) {
@@ -833,6 +845,47 @@ bool write_state_file(const std::string& path) {
   return write_file_atomic(path, buf.data(), size);
 }
 
+#if defined(__APPLE__)
+// En iPhone los hilos secundarios solo tienen 512 KB de pila (en Android y
+// Windows, 1 MB o más). PPSSPP arranca el juego y compila los shaders de
+// OpenGL ES dentro de retro_run, y con esa pila la app se cerraba al abrir un
+// juego de PSP. El hilo de emulación se crea con 16 MB, como el principal de
+// RetroArch.
+pthread_t g_emu_pthread{};
+bool g_emu_pthread_started = false;
+
+void* emulation_entry(void*) {
+  pthread_setname_np("RetroStation emu");
+  emulation_loop();
+  return nullptr;
+}
+
+bool start_emulation_thread() {
+  pthread_attr_t attr;
+  pthread_attr_init(&attr);
+  pthread_attr_setstacksize(&attr, 16 * 1024 * 1024);
+  const bool ok = pthread_create(&g_emu_pthread, &attr, emulation_entry, nullptr) == 0;
+  pthread_attr_destroy(&attr);
+  g_emu_pthread_started = ok;
+  return ok;
+}
+
+void join_emulation_thread() {
+  if (!g_emu_pthread_started) return;
+  pthread_join(g_emu_pthread, nullptr);
+  g_emu_pthread_started = false;
+}
+#else
+bool start_emulation_thread() {
+  g.thread = std::thread(emulation_loop);
+  return true;
+}
+
+void join_emulation_thread() {
+  if (g.thread.joinable()) g.thread.join();
+}
+#endif
+
 void stop_thread() {
   if (!g.running.exchange(false)) return;
   {
@@ -840,7 +893,7 @@ void stop_thread() {
     g.paused.store(false);
   }
   g.pause_cv.notify_all();
-  if (g.thread.joinable()) g.thread.join();
+  join_emulation_thread();
   stop_presenter();
 }
 
@@ -1026,7 +1079,12 @@ RS_API int32_t rs_start(void) {
     RS_LOG(RS_WARN, "Sin salida de audio; el juego continúa en silencio");
   }
   start_presenter();
-  g.thread = std::thread(emulation_loop);
+  if (!start_emulation_thread()) {
+    g.running.store(false);
+    stop_presenter();
+    set_error("No se pudo crear el hilo de emulación");
+    return RS_ERR_LOAD_GAME;
+  }
   return RS_OK;
 }
 

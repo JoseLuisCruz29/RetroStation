@@ -15,11 +15,29 @@ import UIKit
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
+    AppDelegate.redirectLogToFile()
     // Sonido de los juegos aunque el interruptor de silencio esté activado,
     // sin cortar la música de otras apps.
     try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .default, options: [.mixWithOthers])
     try? AVAudioSession.sharedInstance().setActive(true)
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
+  }
+
+  /// Mensajes del motor y de los emuladores (stderr) en Documentos/Registro,
+  /// visible en la app Archivos. Se guarda también el de la sesión anterior:
+  /// si la app se cierra al abrir un juego, ahí queda lo último que pasó.
+  private static func redirectLogToFile() {
+    let fm = FileManager.default
+    guard let docs = fm.urls(for: .documentDirectory, in: .userDomainMask).first else { return }
+    let dir = docs.appendingPathComponent("Registro", isDirectory: true)
+    try? fm.createDirectory(at: dir, withIntermediateDirectories: true)
+    let current = dir.appendingPathComponent("registro.txt")
+    let previous = dir.appendingPathComponent("registro-anterior.txt")
+    try? fm.removeItem(at: previous)
+    try? fm.moveItem(at: current, to: previous)
+    if freopen(current.path, "w", stderr) != nil {
+      setvbuf(stderr, nil, _IONBF, 0)  // sin búfer: nada se pierde si la app se cierra
+    }
   }
 
   func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {

@@ -45,6 +45,21 @@ enum VideoFilter {
   final String label;
 }
 
+/// Diseño de los controles táctiles (todas las consolas). [clasico] es el de
+/// siempre; los demás solo cambian el dibujo, no la posición ni el tamaño.
+enum ControlSkin {
+  clasico('Clásico', 'Translúcido, el de siempre'),
+  consola('Consola', 'Botones de colores con relieve'),
+  minimalista('Minimalista', 'Solo contornos finos'),
+  neon('Neón', 'Contornos brillantes del color de acento'),
+  pixel('Pixel', 'Bloques cuadrados de 8 bits'),
+  cristal('Cristal', 'Vidrio esmerilado con brillo');
+
+  const ControlSkin(this.label, this.description);
+  final String label;
+  final String description;
+}
+
 /// Calidad gráfica en el PC: resolución interna de PSP y PlayStation.
 enum GraphicsQuality {
   original('Original'),
@@ -82,7 +97,11 @@ class AppSettings {
     this.keyboard = const {},
     this.gamepad = const {},
     this.pcQuality = GraphicsQuality.alta,
+    this.controlSkin = ControlSkin.clasico,
   });
+
+  /// Diseño de los botones táctiles en el teléfono.
+  final ControlSkin controlSkin;
 
   /// Solo en Windows: los juegos 3D (PSP y PlayStation) a más resolución.
   final GraphicsQuality pcQuality;
@@ -191,6 +210,7 @@ class AppSettings {
       keyboard: KeyboardBindings.decode(map['controls.keyboard']),
       gamepad: GamepadBindings.decode(map['controls.gamepad']),
       pcQuality: pick(GraphicsQuality.values, 'video.pcQuality', d.pcQuality),
+      controlSkin: pick(ControlSkin.values, 'controls.skin', d.controlSkin),
     );
   }
 
@@ -219,6 +239,7 @@ class AppSettings {
         'controls.keyboard': KeyboardBindings.encode(keyboard),
         'controls.gamepad': GamepadBindings.encode(gamepad),
         'video.pcQuality': pcQuality.name,
+        'controls.skin': controlSkin.name,
       };
 
   AppSettings copyWith({
@@ -246,8 +267,10 @@ class AppSettings {
     Map<int, int>? keyboard,
     Map<int, String>? gamepad,
     GraphicsQuality? pcQuality,
+    ControlSkin? controlSkin,
   }) =>
       AppSettings(
+        controlSkin: controlSkin ?? this.controlSkin,
         pcQuality: pcQuality ?? this.pcQuality,
         gamepad: gamepad ?? this.gamepad,
         keyboard: keyboard ?? this.keyboard,

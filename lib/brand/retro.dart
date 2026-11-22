@@ -118,10 +118,13 @@ class _RetroPanelState extends State<RetroPanel> {
 
 /// Fondo animado: cuadrícula y pistas de circuito que se desplazan despacio
 /// en diagonal, con una viñeta suave. Se detiene con "Reducir animaciones".
+/// Con [amoled] (Ajustes > Fondo > Negro AMOLED) la base es negro puro y las
+/// pistas, más tenues.
 class RetroBackground extends StatefulWidget {
-  const RetroBackground({super.key, this.animate = true});
+  const RetroBackground({super.key, this.animate = true, this.amoled = false});
 
   final bool animate;
+  final bool amoled;
 
   @override
   State<RetroBackground> createState() => _RetroBackgroundState();
@@ -155,24 +158,29 @@ class _RetroBackgroundState extends State<RetroBackground> with SingleTickerProv
   // desplazamiento sea continuo; sin recorte invadía el menú lateral.
   Widget build(BuildContext context) => ClipRect(
         child: RepaintBoundary(
-          child: CustomPaint(painter: _CircuitPainter(_drift), size: Size.infinite),
+          child: CustomPaint(
+            painter: _CircuitPainter(_drift, amoled: widget.amoled),
+            size: Size.infinite,
+          ),
         ),
       );
 }
 
 class _CircuitPainter extends CustomPainter {
-  _CircuitPainter(this.drift) : super(repaint: drift);
+  _CircuitPainter(this.drift, {required this.amoled}) : super(repaint: drift);
 
   final Animation<double> drift;
+  final bool amoled;
 
   static const _tile = 160.0;
 
   @override
   void paint(Canvas canvas, Size size) {
-    canvas.drawRect(Offset.zero & size, Paint()..color = RetroPalette.bg);
+    canvas.drawRect(
+        Offset.zero & size, Paint()..color = amoled ? const Color(0xFF000000) : RetroPalette.bg);
     final shift = drift.value * _tile;
     final grid = Paint()
-      ..color = RetroPalette.bg2
+      ..color = amoled ? const Color(0xFF071015) : RetroPalette.bg2
       ..strokeWidth = 2;
     final gShift = shift % 40;
     for (var x = gShift - 40; x < size.width + 40; x += 40) {
@@ -182,10 +190,10 @@ class _CircuitPainter extends CustomPainter {
       canvas.drawLine(Offset(0, y), Offset(size.width, y), grid);
     }
     final trace = Paint()
-      ..color = RetroPalette.circuit
+      ..color = amoled ? const Color(0xFF102830) : RetroPalette.circuit
       ..strokeWidth = 3
       ..style = PaintingStyle.stroke;
-    final node = Paint()..color = RetroPalette.circuit;
+    final node = Paint()..color = trace.color;
     // Pistas de una baldosa de 160 px (las mismas que en RetroStation OS).
     final path = Path()
       ..moveTo(0, 40)
@@ -233,7 +241,7 @@ class _CircuitPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_CircuitPainter old) => false;
+  bool shouldRepaint(_CircuitPainter old) => old.amoled != amoled;
 }
 
 /// Líneas de barrido CRT muy suaves encima de la interfaz (no reciben toques).

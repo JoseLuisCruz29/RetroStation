@@ -119,7 +119,9 @@ void main() {
     expect(find.text('APARIENCIA'), findsOneWidget);
 
     await tester.scrollUntilVisible(find.text('Consolas y núcleos'), 300,
-        scrollable: find.byType(Scrollable).last);
+        scrollable: find
+            .byWidgetPredicate((w) => w is Scrollable && w.axisDirection == AxisDirection.down)
+            .last);
     await tester.tap(find.text('Consolas y núcleos'));
     await _settle(tester);
     expect(find.text('Game Boy Advance'), findsOneWidget);

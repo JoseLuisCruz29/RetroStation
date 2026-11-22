@@ -18,6 +18,9 @@ import '../../save_manager/backup_service.dart';
 import '../../storage/app_paths.dart';
 import '../../settings/app_settings.dart';
 import '../../storage/storage_providers.dart';
+import '../player/touch_controls.dart';
+import '../../controllers/touch_layout.dart';
+import '../../emulation/native_bindings.dart';
 import '../widgets/section_header.dart';
 
 class SettingsScreen extends ConsumerWidget {
@@ -95,6 +98,11 @@ class SettingsScreen extends ConsumerWidget {
             ),
           ],
           const SectionHeader('Controles táctiles'),
+          _SkinPicker(
+            selected: settings.controlSkin,
+            opacity: settings.controlsOpacity,
+            onChanged: (v) => controller.update(settings.copyWith(controlSkin: v)),
+          ),
           _SliderTile(
             icon: Icons.opacity_rounded,
             title: 'Opacidad',
@@ -523,5 +531,126 @@ class _StorageSection extends ConsumerWidget {
       }
     }
     return freed;
+  }
+}
+
+/// Diseño de los controles táctiles: una vista previa de cada uno (cruceta,
+/// A/B y START) que se elige tocándola. Vale para todas las consolas.
+class _SkinPicker extends StatelessWidget {
+  const _SkinPicker({required this.selected, required this.opacity, required this.onChanged});
+
+  final ControlSkin selected;
+  final double opacity;
+  final ValueChanged<ControlSkin> onChanged;
+
+  static const _previewSize = Size(150, 84);
+
+  /// Controles de muestra: cruceta a la izquierda, A y B a la derecha (con A
+  /// "pulsado" para ver cómo se ve) y START abajo.
+  static final _sample = [
+    const ControlRegion(id: 'dpad', shape: ControlShape.dpad, center: Offset(36, 40), size: Size(56, 56)),
+    const ControlRegion(
+        id: 'a', shape: ControlShape.circle, center: Offset(126, 30), size: Size(30, 30),
+        button: RetroButton.a, label: 'A'),
+    const ControlRegion(
+        id: 'b', shape: ControlShape.circle, center: Offset(96, 48), size: Size(30, 30),
+        button: RetroButton.b, label: 'B'),
+    const ControlRegion(
+        id: 'start', shape: ControlShape.pill, center: Offset(111, 74), size: Size(46, 14),
+        button: RetroButton.start, label: 'START'),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final accent = theme.colorScheme.primary;
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Text('Diseño de los botones', style: theme.textTheme.bodyLarge),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 2, 16, 8),
+            child: Text('${selected.label}: ${selected.description}. Se usa en todas las consolas.',
+                style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
+          ),
+          SizedBox(
+            height: _previewSize.height + 40,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              itemCount: ControlSkin.values.length,
+              separatorBuilder: (_, _) => const SizedBox(width: 10),
+              itemBuilder: (context, i) {
+                final skin = ControlSkin.values[i];
+                final isSelected = skin == selected;
+                return Semantics(
+                  selected: isSelected,
+                  button: true,
+                  label: 'Diseño ${skin.label}',
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(10),
+                    onTap: () => onChanged(skin),
+                    child: Column(
+                      children: [
+                        Container(
+                          width: _previewSize.width,
+                          height: _previewSize.height,
+                          decoration: BoxDecoration(
+                            // Fondo oscuro con algo de color, como la imagen de un juego.
+                            gradient: const LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [Color(0xFF1E3A4C), Color(0xFF101418)],
+                            ),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(
+                              color: isSelected ? accent : theme.colorScheme.outlineVariant,
+                              width: isSelected ? 3 : 1.5,
+                            ),
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: CustomPaint(
+                              painter: ControlsPainter(
+                                regions: _sample,
+                                mask: 1 << RetroButton.a,
+                                opacity: opacity,
+                                accent: accent,
+                                skin: skin,
+                                consoleId: 'snes',
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (isSelected) ...[
+                              Icon(Icons.check_rounded, size: 16, color: accent),
+                              const SizedBox(width: 4),
+                            ],
+                            Text(
+                              skin.label,
+                              style: theme.textTheme.labelLarge
+                                  ?.copyWith(color: isSelected ? accent : null),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

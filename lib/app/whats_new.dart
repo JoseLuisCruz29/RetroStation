@@ -61,7 +61,10 @@ Future<void> showWhatsNew(BuildContext context, WidgetRef ref) async {
                   'Aparece solo si tiene la sección abierta en la misma Wi-Fi. Pulsa «Conectar».'),
               point(Icons.meeting_room_rounded, '3. Sala',
                   'Quien acepta es el anfitrión: elige el juego, los dos marcáis «Listo» y a jugar.'),
-              point(Icons.phone_iphone_rounded, '¡Nuevo! RetroStation para iPhone',
+              point(Icons.gamepad_rounded, '¡Nuevo! Diseños de botones',
+                  'En Ajustes > Controles táctiles elige cómo se ven los botones: Clásico, Consola, '
+                      'Minimalista, Neón, Pixel o Cristal. Sirve para todas las consolas.'),
+              point(Icons.phone_iphone_rounded, 'RetroStation para iPhone',
                   'La app llega al iPhone con sus emuladores, el multijugador y los mandos. '
                       'Se descarga desde la página de GitHub del proyecto.'),
               point(Icons.videogame_asset_rounded, '¡Nuevo! Sega Mega Drive / Genesis',

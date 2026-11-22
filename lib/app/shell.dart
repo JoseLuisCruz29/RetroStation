@@ -45,7 +45,10 @@ class AppShell extends ConsumerWidget {
     return Stack(
       fit: StackFit.expand,
       children: [
-        RetroBackground(animate: !settings.reduceMotion),
+        RetroBackground(
+          animate: !settings.reduceMotion,
+          amoled: settings.background == BackgroundStyle.amoled,
+        ),
         Theme(
           data: theme.copyWith(
             scaffoldBackgroundColor: Colors.transparent,
