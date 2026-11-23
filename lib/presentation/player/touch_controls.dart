@@ -247,7 +247,7 @@ class ControlsPainter extends CustomPainter {
       'n64' => l.startsWith('C')
           ? const Color(0xFFF0C419)
           : (l == 'A' ? const Color(0xFF2F5FD0) : const Color(0xFF2E9E4F)),
-      'snes' || 'nds' => switch (l) {
+      'snes' || 'nds' || '3ds' => switch (l) {
           'A' => const Color(0xFFD7373F),
           'B' => const Color(0xFFF2BE2C),
           'X' => const Color(0xFF3C5FD6),

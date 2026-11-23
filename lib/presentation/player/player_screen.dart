@@ -93,7 +93,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
     final game = _game;
     if (session == null || game == null || !mounted) return;
     final settings = ref.read(settingsProvider);
-    final analog = game.consoleId == 'psp' || game.consoleId == 'n64';
+    final analog = const {'psp', 'n64', '3ds'}.contains(game.consoleId);
     final read = Gamepads.instance.read(
       GamepadBindings.resolve(settings.gamepad, Gamepads.instance.connected.firstOrNull),
       analogStick: analog,
@@ -529,7 +529,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
       );
 
   /// Consolas cuya pantalla responde al tacto (la imagen es la pantalla táctil).
-  bool get _hasTouchScreen => _game?.consoleId == 'nds';
+  bool get _hasTouchScreen => const {'nds', '3ds'}.contains(_game?.consoleId);
 
   Widget _gameView(EmulatorSession session, AppSettings settings) => AspectRatio(
         aspectRatio: session.aspectRatio,

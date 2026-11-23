@@ -45,6 +45,14 @@ if (Test-Path $ppsspp) {
 } else {
   Write-Warning 'Sin PPSSPP (PSP): ejecuta antes tool\build_ppsspp_windows.ps1'
 }
+# 3DS: Azahar se compila aparte con tool\build_azahar_windows.ps1 (tarda mucho).
+$azahar = Join-Path $root 'build\azahar-win\bin\Release\azahar_libretro.dll'
+if (Test-Path $azahar) {
+  Copy-Item $azahar (Join-Path $out 'libazahar_libretro.dll') -Force
+  Write-Host '  libazahar_libretro.dll'
+} else {
+  Write-Warning 'Sin Azahar (3DS): ejecuta antes tool\build_azahar_windows.ps1'
+}
 # Runtime de Visual C++ junto a la app (despliegue local que Microsoft permite):
 # así funciona en PCs sin el "Visual C++ Redistributable" instalado.
 foreach ($dll in 'msvcp140.dll', 'vcruntime140.dll', 'vcruntime140_1.dll') {

@@ -143,6 +143,25 @@ abstract final class CoreOptions {
             // varios núcleos y la emulación de la CPU ocupa uno entero).
             'melonds_threaded_renderer': 'enabled',
           },
+        // Azahar: OpenGL (lo que ofrece el frontend), pantallas una encima de
+        // otra y pantalla táctil con el dedo (pointer). El joystick derecho
+        // es el C-Stick, no un puntero.
+        ('3ds', _) => {
+            // En iPhone Azahar solo tiene Vulkan (MoltenVK).
+            'citra_graphics_api': isIOSDevice() ? 'Vulkan' : 'OpenGL',
+            'citra_layout_option': 'default',
+            'citra_enable_touch_touchscreen': 'enabled',
+            'citra_enable_mouse_touchscreen': 'disabled',
+            'citra_analog_function': 'c_stick',
+            'citra_use_virtual_sd': 'enabled',
+            'citra_use_libretro_save_path': 'LibRetro Default',
+            'citra_language_value': 'Spanish',
+            'citra_resolution_factor': '1',
+            // Sombreadores ya compilados en disco: el juego no se traba la
+            // segunda vez que aparece un efecto.
+            'citra_use_disk_shader_cache': 'enabled',
+            if (isIOSDevice()) 'citra_use_fastinterp': 'enabled',
+          },
         _ => const {},
       };
 
@@ -233,6 +252,8 @@ class CoreOptionsRepository {
         ...?switch ((consoleId, pcQuality)) {
           ('psp', GraphicsQuality.alta) => const {'ppsspp_internal_resolution': '960x544'},
           ('psp', GraphicsQuality.maxima) => const {'ppsspp_internal_resolution': '1440x816'},
+          ('3ds', GraphicsQuality.alta) => const {'citra_resolution_factor': '2'},
+          ('3ds', GraphicsQuality.maxima) => const {'citra_resolution_factor': '3'},
           ('psx', GraphicsQuality.alta || GraphicsQuality.maxima) => const {
               'pcsx_rearmed_neon_enhancement_enable': 'enabled',
             },

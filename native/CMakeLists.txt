@@ -206,6 +206,16 @@ target_include_directories(retrostation_native PRIVATE
   third_party/mgba/src/platform/libretro   # libretro.h
 )
 target_compile_options(retrostation_native PRIVATE -Wall -Wextra -fvisibility=hidden)
+# Vulkan (núcleos que solo dibujan con Vulkan, como Azahar en iPhone): en el PC
+# con el controlador de la tarjeta y en iPhone con MoltenVK. Cabeceras de
+# Vulkan y de libretro_vulkan.h tomadas de Azahar.
+if(WIN32 OR RS_IOS)
+  target_sources(retrostation_native PRIVATE frontend/hw_vulkan.cpp)
+  target_include_directories(retrostation_native PRIVATE
+    third_party/azahar/externals/vulkan-headers/include
+    third_party/azahar/externals/libretro-common/libretro-common/include)
+  target_compile_definitions(retrostation_native PRIVATE RS_HAVE_VULKAN)
+endif()
 if(ANDROID)
   # AAudio (Android 8.0+) se carga con dlopen; OpenSL ES es la alternativa en 7.x.
   # EGL y GLES 3: renderizado por GPU de núcleos como PPSSPP.

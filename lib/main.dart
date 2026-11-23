@@ -51,6 +51,9 @@ Future<void> main() async {
           'https://github.com/hrydgard/ppsspp (commit 9416bbc)'),
       ('gpSP (cable link de GBA en el multijugador LAN)', 'native/third_party/gpsp/COPYING',
           'https://github.com/libretro/gpsp (commit 5819380)'),
+      ('Azahar (Nintendo 3DS)', 'native/third_party/azahar/LICENSE.txt',
+          'https://github.com/azahar-emu/azahar (commit 6f293a2, con native/patches/azahar.patch). '
+              'En iPhone usa MoltenVK (Apache-2.0): https://github.com/KhronosGroup/MoltenVK'),
     ];
     for (final (name, asset, source) in cores) {
       final text = await rootBundle.loadString(asset);

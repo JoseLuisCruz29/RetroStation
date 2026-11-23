@@ -108,6 +108,8 @@ abstract final class TouchLayout {
       // PlayStation: mismo rombo con ○ (A), ✕ (B), △ (X), □ (Y); L/R = L1/R1.
       'psx' => _snesFaceButtons(base, labels: psxLabels),
       'psp' => _psp(_snesFaceButtons(base, labels: psxLabels), area, landscape: landscape),
+      // 3DS: rombo A/B/X/Y como en la consola y Circle Pad bajo la cruceta.
+      '3ds' => _psp(_snesFaceButtons(base), area, landscape: landscape),
       'genesis' => _genesisFaceButtons(base),
       'n64' => _n64(base, area, landscape: landscape),
       _ => base,
@@ -298,7 +300,8 @@ abstract final class TouchLayout {
   static String overrideKey(String consoleId, String controlId) {
     // PSP tiene su propia distribución (joystick, cruceta más alta...): todos
     // sus controles se guardan aparte para no mover los de otras consolas.
-    if (consoleId == 'psp') return 'psp.$controlId';
+    // La 3DS usa la misma distribución que la PSP, pero se guarda aparte.
+    if (consoleId == 'psp' || consoleId == '3ds') return '$consoleId.$controlId';
     return const {'snes', 'psx', 'nds'}.contains(consoleId) && const {'a', 'b', 'x', 'y'}.contains(controlId)
         ? 'snes.$controlId'
         : controlId;

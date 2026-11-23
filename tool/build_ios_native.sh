@@ -51,6 +51,30 @@ else
   echo "::warning::PPSSPP no compiló para iPhone (PSP quedará como próximamente)"
 fi
 
+# 3DS: Azahar con su CMake oficial (-DENABLE_LIBRETRO=ON, como su propio job
+# de iOS). En Apple solo dibuja con Vulkan (MoltenVK, abajo) y, sin JIT, usa
+# su intérprete rápido. Si no compila, la app sale sin 3DS.
+azahar_src="$root/native/third_party/azahar"
+azahar_build="$root/build/ios-azahar"
+if [ -f "$azahar_src/CMakeLists.txt" ]; then
+  # Cambios propios (native/patches/azahar.patch), una sola vez.
+  git -C "$azahar_src" apply --reverse --check "$root/native/patches/azahar.patch" 2>/dev/null ||
+    git -C "$azahar_src" apply "$root/native/patches/azahar.patch"
+  if cmake -S "$azahar_src" -B "$azahar_build" -G Ninja \
+       -DCMAKE_BUILD_TYPE=Release -DCMAKE_SYSTEM_NAME=iOS -DCMAKE_OSX_ARCHITECTURES=arm64 \
+       -DCMAKE_OSX_DEPLOYMENT_TARGET=$min_ios -DCMAKE_OSX_SYSROOT=iphoneos \
+       -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
+       "-DCMAKE_C_FLAGS=-DIOS" "-DCMAKE_CXX_FLAGS=-DIOS" -DIOS=ON \
+       -DENABLE_LIBRETRO=ON -DENABLE_VULKAN=ON -DENABLE_TESTS=OFF -DENABLE_OPT=OFF \
+       -DCITRA_USE_PRECOMPILED_HEADERS=OFF -DCITRA_WARNINGS_AS_ERRORS=OFF -DENABLE_LTO=OFF \
+     && cmake --build "$azahar_build" --parallel --target citra_libretro; then
+    cp "$(find "$azahar_build" -name 'azahar_libretro.dylib' | head -1)" "$build/libazahar_libretro.dylib"
+    strip -x "$build/libazahar_libretro.dylib"
+  else
+    echo "::warning::Azahar no compiló para iPhone (3DS quedará como próximamente)"
+  fi
+fi
+
 rm -rf "$out"
 mkdir -p "$out"
 version=$(grep '^version:' "$root/pubspec.yaml" | sed -E 's/version: *([0-9.]+).*/\1/')
@@ -84,4 +108,15 @@ find "$build" -name '*.dylib' -not -path '*/CMakeFiles/*' | while read -r lib; d
 EOF
   echo "  $name.framework ($(du -h "$fw/$name" | cut -f1))"
 done
+# Vulkan para la 3DS: MoltenVK (Khronos, Apache-2.0) ya compilado como
+# framework dinámico; el motor lo abre con dlopen (hw_vulkan.cpp).
+if [ -n "${MOLTENVK_DIR:-}" ]; then
+  mvk=$(find "$MOLTENVK_DIR" -path '*dynamic*' -path '*ios-arm64/*' -name 'MoltenVK.framework' -type d | grep -v simulator | head -1)
+  if [ -n "$mvk" ]; then
+    cp -R "$mvk" "$out/"
+    echo "  MoltenVK.framework ($(du -sh "$out/MoltenVK.framework" | cut -f1))"
+  else
+    echo "::warning::No se encontró MoltenVK.framework para iPhone en $MOLTENVK_DIR"
+  fi
+fi
 echo "Frameworks listos en $out"

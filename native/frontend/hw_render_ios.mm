@@ -15,6 +15,7 @@
 #include <cstdio>
 
 #include "hw_render.h"
+#include "hw_vulkan.h"
 
 namespace rs::hw {
 namespace {
@@ -69,6 +70,8 @@ bool create_framebuffer(unsigned w, unsigned h) {
 }  // namespace
 
 bool request(retro_hw_render_callback* cb) {
+  // Núcleos que solo dibujan con Vulkan (Azahar en iPhone): ver hw_vulkan.cpp.
+  if (cb && cb->context_type == RETRO_HW_CONTEXT_VULKAN) return rs::vk::request(cb);
   if (!cb) return false;
   switch (cb->context_type) {
     case RETRO_HW_CONTEXT_OPENGLES2:
@@ -88,14 +91,16 @@ bool request(retro_hw_render_callback* cb) {
 
 retro_hw_context_type preferred() { return RETRO_HW_CONTEXT_OPENGLES3; }
 
-bool active() { return g_requested; }
+bool active() { return g_requested || rs::vk::active(); }
 
 void reset() {
+  rs::vk::reset();
   g_requested = false;
   g_cb = retro_hw_render_callback{};
 }
 
 bool start(unsigned max_width, unsigned max_height) {
+  if (rs::vk::active()) return rs::vk::start();
   if (!g_requested || g_running) return g_running;
   g_context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES3];
   if (!g_context) g_context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
@@ -120,6 +125,10 @@ bool start(unsigned max_width, unsigned max_height) {
 }
 
 void stop() {
+  if (rs::vk::active()) {
+    rs::vk::stop();
+    return;
+  }
   if (!g_running) return;
   if (g_cb.context_destroy) g_cb.context_destroy();
   if (g_fbo) glDeleteFramebuffers(1, &g_fbo);
@@ -138,6 +147,7 @@ void poll_window() {}
 void present(unsigned, unsigned) {}
 
 bool capture(std::vector<uint32_t>& out, unsigned& width, unsigned& height) {
+  if (rs::vk::active()) return rs::vk::capture(out, width, height);
   if (!g_running || width == 0 || height == 0) return false;
   out.resize(static_cast<size_t>(width) * height);
   glBindFramebuffer(GL_READ_FRAMEBUFFER, g_fbo);

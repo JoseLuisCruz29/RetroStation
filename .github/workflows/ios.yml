@@ -32,6 +32,9 @@ jobs:
           # PSP: PPSSPP con sus propios submódulos (glslang, SPIRV-Cross, rcheevos...).
           git submodule update --init native/third_party/ppsspp
           git -C native/third_party/ppsspp submodule update --init --recursive --filter=blob:none
+          # 3DS: Azahar con todos sus submódulos (boost, dynarmic, glslang...).
+          git submodule update --init --filter=blob:none native/third_party/azahar
+          git -C native/third_party/azahar submodule update --init --recursive --depth 1             || git -C native/third_party/azahar submodule update --init --recursive
 
       - name: Herramientas
         run: |
@@ -41,6 +44,11 @@ jobs:
           xcode=$(ls -d /Applications/Xcode_*.app | sort -V | tail -1)
           sudo xcode-select -s "$xcode/Contents/Developer"
           xcodebuild -version
+          # Vulkan para la 3DS: MoltenVK ya compilado (Khronos).
+          mkdir -p "$RUNNER_TEMP/moltenvk"
+          curl -sSL --retry 3 -o "$RUNNER_TEMP/moltenvk/mvk.tar"             https://github.com/KhronosGroup/MoltenVK/releases/download/v1.4.2/MoltenVK-ios.tar
+          tar xf "$RUNNER_TEMP/moltenvk/mvk.tar" -C "$RUNNER_TEMP/moltenvk"
+          echo "MOLTENVK_DIR=$RUNNER_TEMP/moltenvk" >> "$GITHUB_ENV"
 
       - uses: subosito/flutter-action@v2
         with:

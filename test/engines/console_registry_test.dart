@@ -33,8 +33,20 @@ void main() {
     expect(ConsoleRegistry.byId('nds')!.coreLibrary, 'libmelonds_libretro.so');
     expect(ConsoleRegistry.byId('genesis')!.coreLibrary, 'libgenesis_plus_gx_libretro.so');
     expect(ConsoleRegistry.byId('n64')!.coreLibrary, 'libmupen64plus_next_libretro.so');
-    // GBA, GB, GBC, NES, SNES, Mega Drive, N64, PS1, NDS y PSP.
-    expect(ConsoleRegistry.availableCount, 10);
+    expect(ConsoleRegistry.byId('3ds')!.coreLibrary, 'libazahar_libretro.so');
+    // GBA, GB, GBC, NES, SNES, Mega Drive, N64, PS1, NDS, PSP y 3DS.
+    expect(ConsoleRegistry.availableCount, 11);
+  });
+
+  test('la 3DS no está en Android de 32 bits y lo explica', () {
+    final previous = isArm32Process;
+    addTearDown(() => isArm32Process = previous);
+    isArm32Process = () => true;
+    final c = ConsoleRegistry.byId('3ds')!;
+    expect(c.status, CoreStatus.unavailable);
+    expect(c.note, contains('64 bits'));
+    isArm32Process = () => false;
+    expect(c.status, CoreStatus.available);
   });
 
   test('toda consola disponible declara su biblioteca nativa', () {

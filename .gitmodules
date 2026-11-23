@@ -28,3 +28,6 @@
 [submodule "native/third_party/mupen64plus"]
 	path = native/third_party/mupen64plus
 	url = https://github.com/libretro/mupen64plus-libretro-nx.git
+[submodule "native/third_party/azahar"]
+	path = native/third_party/azahar
+	url = https://github.com/azahar-emu/azahar.git

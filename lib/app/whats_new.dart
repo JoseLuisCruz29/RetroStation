@@ -61,7 +61,10 @@ Future<void> showWhatsNew(BuildContext context, WidgetRef ref) async {
                   'Aparece solo si tiene la sección abierta en la misma Wi-Fi. Pulsa «Conectar».'),
               point(Icons.meeting_room_rounded, '3. Sala',
                   'Quien acepta es el anfitrión: elige el juego, los dos marcáis «Listo» y a jugar.'),
-              point(Icons.gamepad_rounded, '¡Nuevo! Diseños de botones',
+              point(Icons.videogame_asset_rounded, '¡Nuevo! Nintendo 3DS',
+                  'Juegos de 3DS (.3ds, .cci, .3dsx) con las dos pantallas y la táctil. En el PC, '
+                      'Android de 64 bits e iPhone (experimental: los juegos 3D van lentos).'),
+              point(Icons.gamepad_rounded, 'Diseños de botones',
                   'En Ajustes > Controles táctiles elige cómo se ven los botones: Clásico, Consola, '
                       'Minimalista, Neón, Pixel o Cristal. Sirve para todas las consolas.'),
               point(Icons.phone_iphone_rounded, 'RetroStation para iPhone',

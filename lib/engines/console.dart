@@ -75,7 +75,12 @@ class ConsoleDescriptor {
     required this.color,
     this.supportsRewind = true,
     this.arm32Core,
+    this.arm32Note,
   });
+
+  /// Si no es null, la consola no funciona en Android de 32 bits (su núcleo
+  /// solo existe para 64 bits) y este es el motivo.
+  final String? arm32Note;
 
   final String id;
   final String name;
@@ -105,6 +110,7 @@ class ConsoleDescriptor {
   final String? iosNote;
 
   bool get _missingHere =>
+      (arm32Note != null && isArm32Process()) ||
       (windowsNote != null && isWindowsDesktop()) ||
       (iosNote != null && isIOSDevice() && !iosHasCore(coreLibrary));
 
@@ -114,9 +120,11 @@ class ConsoleDescriptor {
   /// Explicación visible cuando el núcleo no está disponible.
   String? get note => !_missingHere
       ? _note
-      : isIOSDevice()
-          ? iosNote
-          : windowsNote;
+      : arm32Note != null && isArm32Process()
+          ? arm32Note
+          : isIOSDevice()
+              ? iosNote
+              : windowsNote;
 
   /// Etapa del plan en la que se integra el núcleo.
   final int plannedStage;

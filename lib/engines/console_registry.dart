@@ -178,6 +178,28 @@ class ConsoleRegistry {
       // Estados de decenas de MB: rebobinar sería demasiado costoso.
       supportsRewind: false,
     ),
+    ConsoleDescriptor(
+      id: '3ds',
+      iosNote: iosPendingNote,
+      arm32Note: 'Necesita Android de 64 bits: el emulador de 3DS (Azahar) no existe '
+          'para teléfonos con Android de 32 bits.',
+      libretroSystem: 'Nintendo - Nintendo 3DS',
+      name: 'Nintendo 3DS',
+      shortName: '3DS',
+      manufacturer: 'Nintendo',
+      releaseYear: 2011,
+      // Juegos descifrados (.3ds/.cci), programas (.cxi), homebrew (.3dsx) y
+      // títulos instalados (.app).
+      extensions: ['3ds', 'cci', 'cxi', '3dsx', 'app'],
+      coreName: 'Azahar',
+      coreLicense: 'GPL-2.0',
+      coreLibrary: 'libazahar_libretro.so',
+      status: CoreStatus.available,
+      plannedStage: 10,
+      color: Color(0xFFDC2626),
+      // Estados de decenas de MB y GPU: rebobinar sería demasiado costoso.
+      supportsRewind: false,
+    ),
   ];
 
   static ConsoleDescriptor? byId(String id) {

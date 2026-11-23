@@ -1,5 +1,16 @@
 # Registro de cambios
 
+## 4.2.0 — Nintendo 3DS
+### Nuevo
+- **Nintendo 3DS** con Azahar (`native/third_party/azahar`, GPL-2.0), su núcleo libretro oficial:
+  - Formatos `.3ds`/`.cci` (NCSD), `.cxi`/`.app` (NCCH) y `.3dsx` (homebrew); se comprueba la cabecera al importar. Solo juegos descifrados.
+  - Las dos pantallas una encima de otra y la pantalla táctil de abajo (dedo o ratón); Circle Pad con el joystick táctil o el stick izquierdo del mando; C-Stick con el derecho.
+  - **PC:** OpenGL 4.3 y JIT de ARM. Calidad gráfica (PC): Alta = 2× y Máxima = 3×. Probado con Bravely Default.
+  - **Android:** solo 64 bits (OpenGL ES 3.2 y JIT). En Android de 32 bits aparece como no disponible.
+  - **iPhone (experimental):** Vulkan con MoltenVK (sobre Metal) y el intérprete rápido de Azahar, porque iOS no permite JIT. Los juegos 3D van lentos en iPhones antiguos.
+- **Motor:** renderizado por hardware con Vulkan (`native/frontend/hw_vulkan.cpp`), común al PC y al iPhone: el núcleo crea su dispositivo y cada imagen se copia a memoria normal para Flutter.
+- Scripts: `tool/build_azahar_windows.ps1`, `tool/build_azahar_android.ps1` y Azahar en `tool/build_ios_native.sh`; cambio propio en `native/patches/azahar.patch`.
+
 ## 4.1.0 — Diseños de botones
 ### Nuevo
 - **Diseños de los controles táctiles** (Ajustes > Controles táctiles > Diseño de los botones): Clásico (el de siempre, por defecto), Consola (botones de colores con relieve, según el mando de cada sistema), Minimalista, Neón, Pixel y Cristal. Valen para todas las consolas y también se ven en el editor de controles. Cada uno se muestra con una vista previa.

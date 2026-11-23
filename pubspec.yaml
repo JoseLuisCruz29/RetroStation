@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 4.1.0+13
+version: 4.2.0+14
 
 environment:
   sdk: ^3.14.0
@@ -93,6 +93,7 @@ flutter:
     - native/third_party/gpsp/COPYING
     - native/third_party/genesis_plus_gx/LICENSE.txt
     - native/third_party/mupen64plus/LICENSE
+    - native/third_party/azahar/LICENSE.txt
     # Juegos incluidos: todo lo de esta carpeta se instala en el primer arranque.
     - assets/bundled/
     # Logo del autor e iconos (generados con tool/make_brand_assets.py).

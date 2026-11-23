@@ -153,6 +153,25 @@ abstract final class RomInspector {
           sha1: sha1OfFile(path),
           size: size,
         );
+      case '3ds':
+        if (size < 0x200) return RejectedRom(path, 'Archivo demasiado pequeño');
+        if (size > maxImportSize) return RejectedRom(path, 'Mayor de 10 GB');
+        final raf3ds = file.openSync();
+        final Uint8List head3ds;
+        try {
+          head3ds = raf3ds.readSync(0x200);
+        } finally {
+          raf3ds.closeSync();
+        }
+        final error3ds = validate3dsHeader(head3ds, ext.toLowerCase());
+        if (error3ds != null) return RejectedRom(path, error3ds);
+        return ValidRom(
+          path,
+          consoleId: '3ds',
+          title: titleFromFileName(path) ?? 'Sin título',
+          sha1: sha1OfFile(path),
+          size: size,
+        );
       case 'psp':
         final error = validatePspImage(file, ext.toLowerCase(), size);
         if (error != null) return RejectedRom(path, error);
@@ -179,6 +198,19 @@ abstract final class RomInspector {
       default:
         return RejectedRom(path, '${console.name} todavía no tiene núcleo');
     }
+  }
+
+  /// 3DS: `.3ds`/`.cci` son imágenes NCSD (magia "NCSD" en 0x100), `.cxi` y
+  /// `.app` son NCCH ("NCCH" en 0x100) y `.3dsx` es homebrew ("3DSX" al
+  /// principio). Devuelve el motivo si no lo parece, o null.
+  static String? validate3dsHeader(List<int> header, String ext) {
+    String magicAt(int offset) =>
+        header.length >= offset + 4 ? String.fromCharCodes(header.sublist(offset, offset + 4)) : '';
+    final ok = switch (ext) {
+      '3dsx' => magicAt(0) == '3DSX',
+      _ => magicAt(0x100) == 'NCSD' || magicAt(0x100) == 'NCCH',
+    };
+    return ok ? null : 'No parece un juego de Nintendo 3DS (cabecera desconocida)';
   }
 
   /// Tamaño máximo de un archivo importado: 10 GB. Los formatos de cartucho

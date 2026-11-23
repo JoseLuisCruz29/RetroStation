@@ -32,6 +32,9 @@
 
 #include "audio_output.h"
 #include "hw_render.h"
+#ifdef RS_HAVE_VULKAN
+#include "hw_vulkan.h"
+#endif
 #include "libretro.h"
 #include "net_socket.h"
 #include "netplay.h"
@@ -278,6 +281,16 @@ bool environment_cb(unsigned cmd, void* data) {
     case RETRO_ENVIRONMENT_SET_HW_RENDER:
       // Núcleos que dibujan con la GPU (PPSSPP): OpenGL ES en un FBO propio.
       return rs::hw::request(static_cast<retro_hw_render_callback*>(data));
+#ifdef RS_HAVE_VULKAN
+    case RETRO_ENVIRONMENT_SET_HW_RENDER_CONTEXT_NEGOTIATION_INTERFACE:
+      return rs::vk::set_negotiation(data);
+    case RETRO_ENVIRONMENT_GET_HW_RENDER_INTERFACE: {
+      const void* iface = rs::vk::render_interface();
+      if (!iface) return false;
+      *static_cast<const void**>(data) = iface;
+      return true;
+    }
+#endif
     case RETRO_ENVIRONMENT_GET_PREFERRED_HW_RENDER:
       *static_cast<unsigned*>(data) = rs::hw::preferred();
       return true;
@@ -1277,8 +1290,9 @@ RS_API void rs_unload(void) {
     g.last_frame.clear();
   }
   g.core.unload_game();
-  rs::hw::reset();
   g.core.deinit();
+  // Después de deinit: los núcleos con Vulkan usan el dispositivo hasta el final.
+  rs::hw::reset();
   rs::platform::lib_close(g.core.handle);
   g.core = CoreApi{};
   g.rom.clear();
